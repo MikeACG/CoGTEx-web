@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Developer test page</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    </head>
+    <body>
+        <h2>To launch application as it will show in final version click the "Home Page" link</h2>
+        <form target="_blank" action="geneList.jsp" method="get">
+            <label for="geneSymbol">Gene Symbol:</label>
+            <input type="text" id="geneSymbol" name="Gene symbol" value="ATP4A">
+            <br>
+            <label for="geneEnsembl">Gene Ensembl:</label>
+            <input type="text" id="geneEnsembl" name="Gene ensembl" value="ENSG00000105675">
+            <br>
+            <label for="listSize">List Size:</label>
+            <input type="text" id="listSize" name="List size" value="100">
+            <br>
+            <label for="db">Database:</label>
+            <input type="text" id="db" name="Order database" value="Min Pearson">
+            <br>
+            <button type="submit" id="submit">Gene List test page</button>
+        </form>
+        
+        <a href="scatterTest.jsp"> Gene scatter plots test page</a>
+        <br>
+        <a href="geneHome.html"> Home page</a>
+        <br>
+        <a href="networkTest.html"> Network example</a>
+        <br>
+        
+        <form target="_blank" action="networkTest.jsp" method="get">
+            <label for="geneSet">Network test:</label>
+            <textarea id="geneSet" name="Gene set" rows="20">
+                ENSG00000113088
+                ENSG00000145649
+                ENSG00000180644
+                ENSG00000115138
+                ENSG00000172179
+                ENSG00000259384
+            </textarea>
+            <button type="submit" id="submitNetwork">Make network</button>
+        </form>
+    </body>
+</html>

@@ -1,0 +1,115 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : 13 ago 2021, 20:34:49
+    Author     : INTEL
+*/
+
+
+body {
+    font-family: "Trebuchet MS", "Helvetica", "Arial",  "Verdana", "sans-serif";
+    font-size: 80%;
+}
+
+td.details-control {
+    background: url(resources/details_open.png) no-repeat right;
+    cursor: pointer;
+    padding-left: 0px !important;
+    padding-right: 20px !important;
+}
+    
+tr.shown td.details-control {
+    background: url(resources/details_close.png) no-repeat right center;
+}
+
+div.dashboardDiv {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+div.scatterDiv {
+    background-color: white;
+    padding: 0px;
+    margin: 0px;
+    height: 425px;
+    width: 425px;
+    border: 1px solid black;
+}
+
+div.legendDiv {
+    background-color: white;
+    padding: 0px;
+    margin: 0px;
+    height: 425px;
+    font-size: 10px;
+    width: 220px;
+    display: table-cell;
+    vertical-align: middle;
+    border: 1px solid black;
+}
+
+table.legendTable tr td {
+    padding: 0px;
+    border: 0px !important;
+}
+
+div.contingencyDiv {
+    background-color: white;
+    padding: 0px;
+    margin: 0px;
+    height: 425px;
+    font-size: 12px;
+    width: 200px;
+    display: table-cell;
+    vertical-align: middle;
+    text-align: center;
+    border: 1px solid black;
+}
+
+table.contingencyTable {
+    table-layout: fixed;
+    width: 100%;
+}
+
+td.contingencyCell {
+    background-position: bottom;
+    background-image: linear-gradient(var(--color), var(--color));
+    background-size: var(--colorHeight);
+    background-repeat: no-repeat;
+    padding: 0px;
+    border: 1px solid black !important;
+}
+
+table.contingencyTable p.obsP {
+    color: #00820D;
+}
+
+table.contingencyTable p.expecP {
+    color: #6500C4;
+}
+
+table.contingencyTable p.statP {
+    color: black;
+}
+    
+div.dashboardDiv div table tr td:hover {
+    background-color: white;
+}
+
+div.dashboardDiv div table tr td:not(:hover) {
+    background-color: white;
+}
+
+.ring {
+    display: inline-block;
+    border-radius: 50%;
+    border-style: solid;
+    border-width: 3px;
+    border-color: var(--color);
+    background-color: rgba(0, 0, 0, 0);
+    width: 8px;
+    height: 8px;
+}

@@ -57,6 +57,54 @@ public class Gz2NestedList {
         return lines;
     }
     
+    public static List<List<String>> multipleReader(String[] infiles, String sep, 
+            int nrows, int filterFile, int filterColumn, List<List<String>> lines){
+        
+        int n = infiles.length;
+        List<Integer> filterList = new ArrayList<>(); // to store values that will be the guide for sorting the lines
+        int i, j;
+        
+        try {
+            BufferedReader[] readers = new BufferedReader[n];
+            for (j = 0; j < n; j++) {
+                readers[j] = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(infiles[j]))));
+            }
+
+            String line;
+            String[] fields;
+            i = 0;
+            boolean more2read = true;
+            while (more2read) {
+
+                for (j = 0; j < n; j++) {
+
+                    line = readers[j].readLine();
+                    if (line == null) {
+                        more2read = false;
+                        break;
+                    }
+                    fields = line.split(sep);
+                    if (j == filterFile) filterList.add(Integer.parseInt(fields[filterColumn]));
+                    lines.get(i).addAll(Arrays.asList(fields));
+
+                }
+                i++;
+
+            }
+
+            for (j = 0; j < n; j++) {
+                readers[j].close();
+            }
+        } catch (IOException e) {
+            
+            e.printStackTrace(System.err);
+            
+        }
+        
+        if (nrows > 0) filterLines(lines, filterList, nrows); // -1 can be passed as short-hand for return all rows
+        return lines;
+    }
+    
     public static void filterLines(List<List<String>> lines, List<Integer> filterList, int nrows) {
         
         int n = filterList.size();

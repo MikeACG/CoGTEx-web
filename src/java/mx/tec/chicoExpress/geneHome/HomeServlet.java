@@ -64,16 +64,12 @@ public class HomeServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        String versionName = request.getParameter("version");
-        String version = (versionName.equals("Base")) ? "v0.2A" : "v0.2C";
-        
-        String infoFile = "chicoExpress/"  + version + "/aux-files/geneinfo.txt"; // path to separator text file containing info for the genes in the database, can be of any number of columns, they are already expected to be in the intended order of display
+        String infoFile = "chicoExpress/webFiles/producedData/geneinfo.txt"; // path to separator text file containing info for the genes in the database, can be of any number of columns, they are already expected to be in the intended order of display
         String infoFileSep = "\t"; // separator delimiting the columns of the last file
-        String headersFile = "chicoExpress/" + version + "/aux-files/geneinfoHeaders.txt"; // file with a single column specifying the names of the columns in infoFile
+        String headersFile = "chicoExpress/webFiles/producedData/geneinfoHeaders.txt"; // file with a single column specifying the names of the columns in infoFile
         String[] shownHeaders = new String[] {"Ensembl", "Gene Symbol", 
-            "Entrez", "Description", "G >= Q99", "Pearson >= Q99", 
-            "Spearman >= Q99"}; // headers of columns to be shown by default
-        String orderHeader = "Pearson >= Q99"; // header of column by which the geneInfo will be sorted by default
+            "Entrez", "Description", "TPM Pearson >= 0.65 (Q99)"}; // headers of columns to be shown by default
+        String orderHeader = "TPM Pearson >= 0.65 (Q99)"; // header of column by which the geneInfo will be sorted by default
         
         List<String> infoHeaders = SimpleFileReader.readSingleField(headersFile);
         DTCol[] dtCols = Headers2DTCols.convert(infoHeaders, shownHeaders);

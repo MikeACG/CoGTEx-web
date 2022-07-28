@@ -77,12 +77,9 @@ public class InfoServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        String versionName = request.getParameter("version");
-        String version = (versionName.equals("Base")) ? "v0.2A" : "v0.2C";
-        
-        String infoFile = "chicoExpress/"  + version + "/aux-files/geneinfo.txt"; // path to separator text file containing info for the genes in the database, can be of any number of columns, they are already expected to be in the intended order of display
+        String infoFile = "chicoExpress/webFiles/producedData/geneinfo.txt"; // path to separator text file containing info for the genes in the database, can be of any number of columns, they are already expected to be in the intended order of display
         String infoFileSep = "\t"; // separator delimiting the columns of the last file
-        String headersFile = "chicoExpress/" + version + "/aux-files/geneinfoHeaders.txt"; // file with a single column specifying the names of the columns in infoFile
+        String headersFile = "chicoExpress/webFiles/producedData/geneinfoHeaders.txt"; // file with a single column specifying the names of the columns in infoFile
         String[] shownHeaders = new String[] {"Biotype", "Description"}; // headers of columns to be shown by default
         String filteringColumn = "Ensembl";
         

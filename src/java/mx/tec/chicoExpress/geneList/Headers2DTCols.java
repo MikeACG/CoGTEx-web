@@ -14,7 +14,8 @@ import java.util.List;
  */
 public class Headers2DTCols {
     
-    public static List<DTCol> convert(List<String> headers, int after) {
+    public static List<DTCol> convert(List<String> headers, int after, 
+            List<String> shownHeadersList) {
         
         int n = headers.size();
         DTCol dtCol;
@@ -22,6 +23,7 @@ public class Headers2DTCols {
         for (int i = 0; i < n; i++) {
             dtCol = new DTCol(headers.get(i));
             if (i == 0) dtCol.setClassName("dt-nowrap dt-body-left");
+            if (shownHeadersList.indexOf(headers.get(i)) >= 0) dtCol.setVisible(true);
             if (i > after) dtCol.setType("abs-num");
             out.add(dtCol);
         }

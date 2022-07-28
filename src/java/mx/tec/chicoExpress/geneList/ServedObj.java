@@ -13,10 +13,13 @@ public class ServedObj {
     
     private DataTable dataTable;
     private String dataTableHTML;
+    private String selectorsHTML;
     
-    public ServedObj(DataTable dataTable, String dataTableHTML) {
+    public ServedObj(DataTable dataTable, String dataTableHTML, 
+            String selectorsHTML) {
         this.dataTable = dataTable;
         this.dataTableHTML = dataTableHTML;
+        this.selectorsHTML = selectorsHTML;
     }
     
 }

@@ -89,7 +89,7 @@ function homeRequest() {
     $.ajax({
         url: "HomeServlet",
         type: "GET",
-        data: parseHomeRequest(),
+        data: {},
         success: function(resp) {
            console.log(resp);
            configPageControls(); // show page controls
@@ -106,6 +106,8 @@ function homeRequest() {
 }
 
 // parses the request for the genes in the database based on version
+// unnecesary since merge of versions in a single page
+/*
 function parseHomeRequest() {
     
     // get database version and copy to hidden field to pass to gene lists page
@@ -119,6 +121,7 @@ function parseHomeRequest() {
     
     return {version: version};
 }
+*/
 
 // shows the page controls and attaches the proper events
 function configPageControls() {
@@ -139,14 +142,19 @@ function configPageControls() {
     let oneGeneTab = document.getElementById('oneGeneTab');
     oneGeneTab.style.display = "block";
     
-     // get database version and copy to fields that use it
+    // get database version and copy to fields that use it
+    // unnecessary since merge of versions in a single page
+    /*
     let version = document.getElementById('versionSup').innerHTML;
     let plotVersionSelect = document.getElementById('expDistPlotVersion');
     let listVersionInput = document.getElementById('dataVersion');
     let networkVersionInput = document.getElementById('networkDbVersion');
     plotVersionSelect.value = listVersionInput.value = networkVersionInput.value = version;
+    */
     
     // configure link and form to go to opposite version of database
+    // unnecessary since merge of versions in a single page
+    /*
     let versionChangeInput = document.getElementById('versionChangeInput');
     let versionChangeLink = document.getElementById('versionChangeLink');
     versionChangeLink.href = '#';
@@ -160,6 +168,7 @@ function configPageControls() {
        versionChangeLink.innerHTML = 'Go to CoGtex base expression';
        versionChangeInput.value = 'Base';
     }
+    */
     
     // configure table plots type select to hide/show plot preferences depending on the type of plot
     let plotTypeSelect = document.getElementById('plotType');
@@ -297,7 +306,7 @@ function drawInfo (info) {
     selectorsDiv.addEventListener('change', function(e) {
         let input = e.target;
         if (input.tagName === "INPUT") {
-            let column = dataTable.column(':contains(' + input.id + ')'); // id of checkbox is added as the column title/header in the server. This selects a
+            let column = dataTable.column(':contains(' + input.id + ')'); // id of checkbox is added as the column title/header in the server
             if (input.checked) {
                 column.visible(true);
             } else {

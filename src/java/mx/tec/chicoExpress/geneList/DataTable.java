@@ -54,6 +54,13 @@ public class DataTable {
         return out;
     }
     
+    public boolean[] getColumnVisibilities() {
+        int n = columns.size();
+        boolean[] out = new boolean[n];
+        for (int i = 0; i < n; i++) out[i] = columns.get(i).getVisible();
+        return out;
+    }
+    
     public static Object[] makeLengthMenu(int dataLength) {
         
         List<Integer> lengths = new ArrayList<>();

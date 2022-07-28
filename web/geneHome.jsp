@@ -16,17 +16,14 @@
         <link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css">
         <link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.3.1/css/buttons.dataTables.min.css">
         <link rel="stylesheet" href="geneHome.css">
-        <title>CoGTEx <%= request.getParameter("Version") %></title>
+        <title>CoGTEx</title>
     </head>
     
     <body>
         
         <h1>
-            <span class="title">
-                CoGTEx<sup id="versionSup" style="font-size: 12px;"><%= request.getParameter("Version") %></sup>
-            </span>
+            <span class="title">CoGTEx: </span>
             <span>a database of system-level human gene expression associations</span>
-            <a id="versionChangeLink" style="font-size: 10px"></a>
         </h1>
         
         <div id="tabIndependentDiv" style="display: none;">
@@ -163,7 +160,6 @@
                     <form id="listPreferencesForm" action="geneList.jsp" method="get" target="_blank">
                         <input type="hidden" id="geneSymbol" name="Gene symbol">
                         <input type="hidden" id="geneEnsembl" name="Gene ensembl">
-                        <input type="hidden" id="dataVersion" name="Version">
                         <label for="listSize">Number of top associations to show:</label>
                         <select  name="List size" id="listSize">
                             <option value="100">100</option>
@@ -181,18 +177,28 @@
                         <label for="db">Database to order top associations:</label>
                         <select name="Order database" id="db">
                             <optgroup label="Common">
-                                <option value="Min Pearson">Robust Minimum Pearson Realization</option>
-                                <option value="Min Spearman">Robust Minimum Spearman Realization</option>
-                                <option value="Min G">Robust Minimum G Realization</option>
+                                <option value="TPM_Min Pearson">TPM Robust Minimum Pearson Realization</option>
+                                <option value="TPM_Min Spearman">TPM Robust Minimum Spearman Realization</option>
+                                <option value="TPM_Min G">TPM Robust Minimum G Realization</option>
+                                <option value="Z-score_Min Pearson">Z-score Robust Minimum Pearson Realization</option>
+                                <option value="Z-score_Min Spearman">Z-score Robust Minimum Spearman Realization</option>
+                                <option value="Z-score_Min G">Z-score Robust Minimum G Realization</option>
                             </optgroup>
                             <optgroup label="Covariates">
-                                <option value="Pearson Age 50-59">Age 50-59</option>
-                                <option value="Pearson Age < 50">Age < 50</option>
-                                <option value="Pearson Age > 59">Age > 59</option>
-                                <option value="Pearson Sex Female">Female Only</option>
-                                <option value="Pearson Sex Male">Male Only</option>
-                                <option value="Pearson Ischemia High">Ischemia High</option>
-                                <option value="Pearson Ischemia Low">Ischemia Low</option>    
+                                <option value="TPM_Pearson Age 50-59">TPM Age 50-59</option>
+                                <option value="TPM_Pearson Age < 50">TPM Age < 50</option>
+                                <option value="TPM_Pearson Age > 59">TPM Age > 59</option>
+                                <option value="TPM_Pearson Sex Female">TPM Female Only</option>
+                                <option value="TPM_Pearson Sex Male">TPM Male Only</option>
+                                <option value="TPM_Pearson Ischemia High">TPM Ischemia High</option>
+                                <option value="TPM_Pearson Ischemia Low">TPM Ischemia Low</option>
+                                <option value="Z-score_Pearson Age 50-59">Z-score Age 50-59</option>
+                                <option value="Z-score_Pearson Age < 50">Z-score Age < 50</option>
+                                <option value="Z-score_Pearson Age > 59">Z-score Age > 59</option>
+                                <option value="Z-score_Pearson Sex Female">Z-score Female Only</option>
+                                <option value="Z-score_Pearson Sex Male">Z-score Male Only</option>
+                                <option value="Z-score_Pearson Ischemia High">Z-score Ischemia High</option>
+                                <option value="Z-score_Pearson Ischemia Low">Z-score Ischemia Low</option>   
                             </optgroup>
                         </select>
                         <br>

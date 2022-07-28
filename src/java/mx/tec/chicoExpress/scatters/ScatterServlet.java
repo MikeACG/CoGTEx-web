@@ -67,8 +67,8 @@ public class ScatterServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        String versionName = request.getParameter("version");
-        String version = (versionName.equals("Base")) ? "v0.2A" : "v0.2C";
+        String versionName = request.getParameter("versionName");
+        String version = request.getParameter("version");
         
         // tune some settings that remain constant for all plots
         String groupsPath = "chicoExpress/" + version + "/aux-files/sampleGroups.txt"; // path to separator-based file containing 2 columns: first are the IDs of all samples and second the group (E.g. tissue) of each sample

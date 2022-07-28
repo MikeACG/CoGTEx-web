@@ -13,6 +13,7 @@ public class DTCol {
     
     private String title;
     private String className = "dt-nowrap dt-body-center";
+    private boolean visible = false;
     private String type = null;
     
     public DTCol(String title) {
@@ -23,8 +24,16 @@ public class DTCol {
         return title;
     }
     
+    public boolean getVisible() {
+        return visible;
+    }
+    
     public void setClassName(String className) {
         this.className = className;
+    }
+    
+    public void setVisible(boolean visible) {
+        this.visible = visible;
     }
     
     public void setType(String type) {

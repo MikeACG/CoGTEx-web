@@ -43,7 +43,7 @@ function Coplot(dashboardSuffix, scatterData, options, brksSeries,
     this.contingency = contingency; // keeps the current contngency table for the plot shown in the data table
     this.info = info; // keeps a table howing the info of the gene in the y-axis of the coplot
     this.scatterDataMod = scatterData; // keeps a version of scatterData which may be modified later
-    this.request = request; // the request to the server that originated this coplo
+    this.request = request; // the request to the server that originated this coplot
     
 }
 var listPlot; // global object for the plot shown in the data table
@@ -74,6 +74,19 @@ var searchObj = {
     }
 };
 var infoObj = {}; // global object to keep the information of all genes shwon in the gene list which can be plotted as part of the coplots
+// function to convert user shown names of versions of the data to the internal ID used to handle it
+function versionName2id(vn) {
+    let id;
+    switch (vn) {
+        case 'TPM':
+           id = 'v0.2A';
+           break;
+        case 'Z-score':
+           id = 'v0.2C';
+           break; 
+    }
+    return id;
+}
 
 // after the page loads, request the gene list for the gene selected in the
 // previous page.
@@ -126,12 +139,17 @@ function switchSpinner(target) {
 // is used by the server to return the correct gene list
 function parseListRequest () {
     
-    let request = {};
-    let parameters = document.getElementById('parameters').
-            getElementsByTagName('input');
-    for (let i = 0; i < parameters.length; i++) {
-        request[parameters[i].id] = parameters[i].value;
-    }
+    let orderVersionedDbInput = document.getElementById('Order database');
+    let orderVersionedDb = orderVersionedDbInput.value.split('_');
+    
+    let request = {
+        orderVersionName: orderVersionedDb[0],
+        orderDatabase: orderVersionedDb[1],
+        ensembl: document.getElementById('Gene ensembl').value,
+        listSize: document.getElementById('List size').value
+    };
+    
+    
     return request;
     
 }
@@ -169,7 +187,8 @@ function parseInfoRequest(requestListResponse) {
             map(row => row[idColIdx]).join('|');
     
     // get the data version
-    request.version = document.getElementById('Version').value; // hidden input box filled with jstl on page load
+    // unnecessary since merge of both versions
+    //request.version = document.getElementById('Version').value; // hidden input box filled with jstl on page load
     return request;
     
 }
@@ -177,19 +196,26 @@ function parseInfoRequest(requestListResponse) {
 // shows the page controls and attaches the proper events
 function configPageControls() {
     
-     // get database version and copy to fields that use it
+    // get database version and copy to fields that use it
+    // unused since merge of versions in a single page
+    /*
     let version = document.getElementById('Version').value; // hidden box filled with jstl on page load 
     let plotVersionSelect = document.getElementById('plotVersion');
     let listVersionSelect = document.getElementById('listVersion');
     plotVersionSelect.value = listVersionSelect.value = version;
+    */
     
     // set other parameters of this page to the defaults for a new page of the same kind for another gene if user requests it
+    let versionedListDb = document.getElementById('Order database').value;
     document.getElementById('listSize').value = document.getElementById('List size').value; // hidden box filled with jstl on page load
-    document.getElementById('listDb').value = document.getElementById('Order database').value; // hidden box filled with jstl on page load
+    document.getElementById('listDb').value = versionedListDb; // hidden box filled with jstl on page load
     
     // get database and set default plot option the corresponding
+    let versionedListDbSplt = versionedListDb.split("_"); // sep given in geneHome page
+    let listVersion = versionedListDbSplt[0];
+    let listDb = versionedListDbSplt[1];
     let db;
-    switch (document.getElementById('Order database')) { // hidden box filled with jstl on page load, this case is to map the database header name to sql file in the server
+    switch (listDb) { // hidden box filled with jstl on page load, this case is to map the database header name to sql file in the server
         case 'Min Pearson':
             db = 'min_pearson';
             break;
@@ -223,9 +249,9 @@ function configPageControls() {
         default:
             db = 'min_pearson';
     }
-    document.getElementById('plotDatabase').value = db;
+    document.getElementById('plotDatabase').value = listVersion + "," + db; // separator given in this page's JSP
     
-    // show pplot preferences
+    // show plot preferences
     document.getElementById('plotPreferencesDiv').style.display = 'block';
     
 }
@@ -316,6 +342,26 @@ function drawList (list) {
                 configGeneActions(tr, dataTable); // create actions for selected row (gene)
                 controlTd.classList.add('details-control'); // activate details-control for the first cell of this row
             }
+        }
+    });
+    
+    // add checkboxes to the document which will act as selectors to hide/show columns
+    let selectorsCheckboxesDiv = document.getElementById('selectorsCheckboxesDiv');
+    selectorsCheckboxesDiv.innerHTML = list.selectorsHTML; // generated in server according to column names of the data
+    $(selectorsCheckboxesDiv).controlgroup(); // add jquery user interface (UI) css
+    
+    // add checkboxes change event to show/hide columns
+    selectorsCheckboxesDiv.addEventListener('change', function(e) {
+        let input = e.target;
+        if (input.tagName === "INPUT") {
+            let column = dataTable.column(':contains(' + input.id + ')'); // id of checkbox is added as the column title/header in the server
+            if (input.checked) {
+                column.visible(true);
+            } else {
+                column.visible(false);
+            }
+            searchObj.readPerColumnInputs(); // update shown columns and their inputs
+            dataTable.draw(); // redraw to reload searches
         }
     });
     
@@ -564,14 +610,18 @@ function requestScatter(yEnsembl, ySymbol) {
 // element names/ids correspond to the ones sent from the form of the previous page to this page
 function parseScatterRequest(yEnsembl, ySymbol) {
     
+    let versionedDb = document.getElementById('plotDatabase').value;
+    let versionedDbSplt = versionedDb.split(","); // separator given in this page's JSP
+    
     let request = {};
     
     request.xEnsembl = document.getElementById('Gene ensembl').value;
     request.xSymbol = document.getElementById('Gene symbol').value;
     request.yEnsembl = yEnsembl;
     request.ySymbol = ySymbol;
-    request.db = document.getElementById('plotDatabase').value;
-    request.version = document.getElementById('plotVersion').value;
+    request.db = versionedDbSplt[1];
+    request.version = versionName2id(versionedDbSplt[0]);
+    request.versionName = versionedDbSplt[0];
     request.contingencyVertical = 'true';
     
     return request;

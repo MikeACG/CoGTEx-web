@@ -62,47 +62,79 @@ public class ListServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        String versionName = request.getParameter("Version");
-        String version = (versionName.equals("Base")) ? "v0.2A" : "v0.2C";
-        
-        String precolsPath = "chicoExpress/" + version + "/aux-files/perGeneTablesPrecols.txt"; // psth to separator-based file with 3 columns (ensembl, gene symbol and entrez) of identifiers for all genes in the databaser
+        String precolsPath = "chicoExpress/webFiles/producedData/perGeneTablesPrecols.txt"; // path to separator-based file with 3 columns (ensembl, gene symbol and entrez) of identifiers for all genes in the databaser
         String precolsSep = "\t"; // field separator for the precolsPath file
         String[] precolsHeaders = new String[] {"Ensembl", "Gene Symbol", "Entrez"}; // headers for the columns in the precolsPathFile
-        String perGeneDir = "chicoExpress/" + version + "/per-gene-tables/"; // path to directory containing folders organizing separator-based gz files with the gene lists of each gene
+        String[] versionIds = new String[] {"v0.2A", "v0.2C"}; // versions of the database to be displayed
+        String[] versionNames = new String[] {"TPM", "Z-score"}; // names to be shown to the user, correspond to versionIds
+        String perGeneHeadersDir = "chicoExpress/webFiles/producedData/geneListHeaders/"; // folder from where to read the headers of the gene lists columns for each version, files for each version are named as the entries versionsIds
+        String versionsDir = "chicoExpress/"; // folder that contains the folders for the data of all versions
+        String perGeneDir = "per-gene-tables/"; // directory in each version containing folders organizing separator-based gz files with the gene lists of each gene
         String perGeneSep = "\t"; // field separator for the files in perGeneDir
         int perGeneDirSize = 500; // maximum number of files per folder in perGeneDir
-        String perGeneHeadersPath = "chicoExpress/" + version + "/aux-files/geneListHeaders.txt"; // path to file containing a single column with the headers that one wants to display for each of the columns of the gene lists, they correspond with to the columns in any perGeneFile
         double formatFactor = 100.0;
         int formatAfter = 2; // all columns of gene tables after this index will be converted from int to double by dividing their values over formatFactor
-        String [] deltasFor = new String[]{" Sex ", " Age ", " Ischemia "};
+        //String [] deltasFor = new String[]{" Sex ", " Age ", " Ischemia "};
+        String[] shownHeaders = new String[] {"Ensembl", "Gene Symbol", "Entrez", "TPM Min Pearson", "Z-score Min Pearson"}; // columns to show by default in the gene list
         
-        String ensembl = request.getParameter("Gene ensembl");
-        String orderDatabase = request.getParameter("Order database");
-        String listSize = request.getParameter("List size");
-        int geneListNrows = (listSize.equals("max")) 
-                ? -1 : Integer.parseInt(listSize);
+        // load the columns to be appended to every gene list (gene ids and such)
         List<List<String>> precols = SimpleFileReader.readMultiField(
                 precolsPath, precolsSep);
         
-        List<String> perGeneHeaders = 
-                SimpleFileReader.readSingleField(perGeneHeadersPath);
-        int orderColIdx = perGeneHeaders.indexOf(orderDatabase);
-        String listPath = perGeneDir + Ensembl2Folder.convert(ensembl, 
-                perGeneDirSize) + ensembl + ".txt.gz";
-        List<List<String>> geneList = Gz2NestedList.main(listPath, perGeneSep, 
-                geneListNrows, orderColIdx, precols);
+        // load the gene list headers for each version of database and identify the column used to filter
+        String orderVersionName = request.getParameter("orderVersionName");
+        String orderDatabase = request.getParameter("orderDatabase");
+        int nVersions = versionIds.length;
+        List<List<String>> perVersionGeneHeaders = new ArrayList<>();
+        int filterFile = -1;
+        int filterColumn = -1;
+        for (int i = 0; i < nVersions; i++) {
+            perVersionGeneHeaders
+                    .add(SimpleFileReader.readSingleField(perGeneHeadersDir + versionIds[i]));
+            if (orderVersionName.equals(versionNames[i])){
+                filterFile = i;
+                filterColumn = perVersionGeneHeaders.get(i).indexOf(orderDatabase);
+            }
+            
+        }
         
+        // load the gene list for query gene that has all versions concatenated
+        String ensembl = request.getParameter("ensembl");
+        String ensemblDir = Ensembl2Folder
+                .convert(ensembl, perGeneDirSize) + ensembl + ".txt.gz";
+        String[] listsPaths = new String[nVersions];
+        for (int i = 0; i < nVersions; i++) {
+            listsPaths[i] = versionsDir + versionIds[i] + "/" + perGeneDir + ensemblDir;
+        }
+        String listSize = request.getParameter("listSize");
+        int geneListNrows = (listSize.equals("max")) 
+                ? -1 : Integer.parseInt(listSize);
+        List<List<String>> geneList = Gz2NestedList.multipleReader(listsPaths, perGeneSep, 
+                geneListNrows, filterFile, filterColumn, precols);
+        
+        // concatenate all headers and convert to data table headers, set database used to order the list as shown by default
         List<String> allHeaders = new ArrayList<>(Arrays.asList(precolsHeaders));
-        allHeaders.addAll(perGeneHeaders);
-        List<DTCol> dtCols = Headers2DTCols.convert(allHeaders, formatAfter);
+        for (int i = 0; i < nVersions; i++) {
+            List<String> hs = new ArrayList<>();
+            for (int j = 0; j < perVersionGeneHeaders.get(i).size(); j++) {
+                hs.add(versionNames[i] + " " + perVersionGeneHeaders.get(i).get(j));
+            }
+            allHeaders.addAll(hs);
+        }
+        List<String> shownHeadersList = new ArrayList<>(Arrays.asList(shownHeaders));
+        shownHeadersList.add(versionNames[filterFile] + " " + perVersionGeneHeaders.get(filterFile).get(filterColumn));
+        List<DTCol> dtCols = Headers2DTCols.convert(allHeaders, formatAfter, shownHeadersList);
+        
+        // make data table object from gene list and format it in the desired form
         DataTable dataTable = new DataTable(geneList, dtCols, 
-                orderColIdx + precolsHeaders.length);
+                filterColumn + precolsHeaders.length);
         dataTable.intStrDivide2doubleStr(formatAfter, formatFactor);
-        dataTable.addMaxDeltas(deltasFor, formatFactor);
+        //dataTable.addMaxDeltas(deltasFor, formatFactor);
         
         // pack the objects to be served and serve them
         ServedObj r = new ServedObj(dataTable, 
-                DataTableHTML.build(dataTable, formatAfter, formatFactor));
+                DataTableHTML.build(dataTable, formatAfter, formatFactor), 
+                DataTableHTML.buildColSelectors(dataTable));
         String json = new Gson().toJson(r);
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");

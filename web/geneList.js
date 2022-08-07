@@ -348,21 +348,29 @@ function drawList (list) {
     // add checkboxes to the document which will act as selectors to hide/show columns
     let selectorsCheckboxesDiv = document.getElementById('selectorsCheckboxesDiv');
     selectorsCheckboxesDiv.innerHTML = list.selectorsHTML; // generated in server according to column names of the data
-    $(selectorsCheckboxesDiv).controlgroup(); // add jquery user interface (UI) css
-    
+    let selectors = [...document.querySelectorAll('.versionedColSelector')]; // class given in server
+    selectors.forEach(function(child) { // add jquery user interface (UI) css;
+        [...child.children].forEach(checkbox => $(checkbox).tooltip().off('focusin focusout')); // do not show duplicated tooltip on click
+        $(child).controlgroup();
+    });
+
     // add checkboxes change event to show/hide columns
-    selectorsCheckboxesDiv.addEventListener('change', function(e) {
-        let input = e.target;
-        if (input.tagName === "INPUT") {
-            let column = dataTable.column(':contains(' + input.id + ')'); // id of checkbox is added as the column title/header in the server
-            if (input.checked) {
-                column.visible(true);
-            } else {
-                column.visible(false);
+    selectors.forEach(function(child) {
+        
+       child.addEventListener('change', function(e) {
+            let input = e.target;
+            if (input.tagName === "INPUT") {
+                let column = dataTable.column(':contains(' + input.id + ')'); // id of checkbox is added as the column title/header in the server
+                if (input.checked) {
+                    column.visible(true);
+                } else {
+                    column.visible(false);
+                }
+                searchObj.readPerColumnInputs(); // update shown columns and their inputs
+                dataTable.draw(); // redraw to reload searches
             }
-            searchObj.readPerColumnInputs(); // update shown columns and their inputs
-            dataTable.draw(); // redraw to reload searches
-        }
+        });
+        
     });
     
     // when changing pages of the table, sorting the table or searching something:

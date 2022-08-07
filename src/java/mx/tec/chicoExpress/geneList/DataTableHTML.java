@@ -5,6 +5,8 @@
  */
 package mx.tec.chicoExpress.geneList;
 
+import java.util.List;
+
 /**
  *
  * @author INTEL
@@ -104,6 +106,78 @@ public class DataTableHTML {
     
     public static double format(double v, double roundFactor) {
         return Math.round(v * roundFactor) / roundFactor;
+    }
+    
+    public static String buildVersionedColSelectors(DataTable dataTable, 
+            List<List<String>> perVersionGeneHeaders, String[] versionNames) {
+        
+        String divClass = "versionedColSelector";
+        String label, h;
+        
+        String html = "<table>";
+        for (int j = 0; j < versionNames.length; j++) {
+            
+            html += "<tr>";
+            html += "<th>" + versionNames[j] + ": </th>";
+            
+            html += "<th><div class='" + divClass + "'>";
+            for (int i = 0; i < perVersionGeneHeaders.get(j).size(); i++) {
+                
+                h = versionNames[j] + " " + perVersionGeneHeaders.get(j).get(i);
+                label = shortenVersionedColname(h);
+                html += "<input type='checkbox' id='" + h + "' ";
+                html += "title='" + h + "' ";
+                if (dataTable.getColumnVisibility(h)) html += " checked";
+                html += "/>";
+                html += "<label for='" + h + "' title='" + h + "'>" + label + "</label>";
+                
+            }
+            html += "</div></th>";
+            
+            html += "</tr>";
+            
+        }
+        html += "</table>";
+        
+        return html;
+    }
+    
+    public static String shortenVersionedColname(String colname) {
+        
+        int nletters = 3;
+        
+        // split colname by space between words
+        String[] words = colname.split(" ");
+        int nwords = words.length;
+        
+        // get last word
+        String lastWord = words[nwords - 1];
+        char[] chars = lastWord.toCharArray();
+        boolean hasDigit = false;
+        for (char c : chars) { // check if last word has digit
+            
+            if (Character.isDigit(c)) {
+                
+                hasDigit = true;
+                break;
+                
+            }
+            
+        }
+        
+        String shortName;
+        if (hasDigit) { // get full second to last and last word
+            
+            shortName = words[nwords - 2] + lastWord;
+            
+        } else { // get last 3 letters of last
+            
+            shortName = lastWord.substring(0, Math.min(lastWord.length(), nletters));
+            
+        }
+        
+        return shortName;
+        
     }
     
     public static String buildColSelectors(DataTable dataTable) {

@@ -61,6 +61,25 @@ public class DataTable {
         return out;
     }
     
+    public boolean getColumnVisibility(String colTitle) {
+        
+        String[] colTitles = getColumnTitles();
+        int queryIdx = -1;
+        for (int i = 0; i < colTitles.length; i++) {
+            
+            if (colTitles[i].equals(colTitle)) {
+                
+                queryIdx = i;
+                break;
+                
+            }
+            
+        }
+        
+        return columns.get(queryIdx).getVisible();
+        
+    }
+    
     public static Object[] makeLengthMenu(int dataLength) {
         
         List<Integer> lengths = new ArrayList<>();

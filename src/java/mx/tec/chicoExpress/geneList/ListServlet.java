@@ -134,7 +134,7 @@ public class ListServlet extends HttpServlet {
         // pack the objects to be served and serve them
         ServedObj r = new ServedObj(dataTable, 
                 DataTableHTML.build(dataTable, formatAfter, formatFactor), 
-                DataTableHTML.buildColSelectors(dataTable));
+                DataTableHTML.buildVersionedColSelectors(dataTable, perVersionGeneHeaders, versionNames));
         String json = new Gson().toJson(r);
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");

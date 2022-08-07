@@ -153,15 +153,15 @@
                         </optgroup>
                         <optgroup label="Covariates">
                             <option value="TPM_Pearson Age 50-59">TPM Age 50-59</option>
-                            <option value="TPM_Pearson Age < 50">TPM Age < 50</option>
-                            <option value="TPM_Pearson Age > 59">TPM Age > 59</option>
+                            <option value="TPM_Pearson Age <50">TPM Age < 50</option>
+                            <option value="TPM_Pearson Age >59">TPM Age > 59</option>
                             <option value="TPM_Pearson Sex Female">TPM Female Only</option>
                             <option value="TPM_Pearson Sex Male">TPM Male Only</option>
                             <option value="TPM_Pearson Ischemia High">TPM Ischemia High</option>
                             <option value="TPM_Pearson Ischemia Low">TPM Ischemia Low</option>
                             <option value="Z-score_Pearson Age 50-59">Z-score Age 50-59</option>
-                            <option value="Z-score_Pearson Age < 50">Z-score Age < 50</option>
-                            <option value="Z-score_Pearson Age > 59">Z-score Age > 59</option>
+                            <option value="Z-score_Pearson Age <50">Z-score Age < 50</option>
+                            <option value="Z-score_Pearson Age >59">Z-score Age > 59</option>
                             <option value="Z-score_Pearson Sex Female">Z-score Female Only</option>
                             <option value="Z-score_Pearson Sex Male">Z-score Male Only</option>
                             <option value="Z-score_Pearson Ischemia High">Z-score Ischemia High</option>

@@ -29,6 +29,7 @@ public class GCOBuilder {
     }
     
     public static List<Row> buildRows(Gene x, Gene y, HashMap<String, Integer> uGroups, int ncols, int nGroupedCols) {
+        
         List<String> aes = y.GCOAes(); // aesthetics of points in GCO format
         List<String> tooltips = y.GCOTooltips(); // tooltips of points in GCO format
         List<String> ctooltips = addTooltipCoords(tooltips, x.getExpression(), y.getExpression()); // add point coordinates to tooltips

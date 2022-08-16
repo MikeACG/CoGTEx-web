@@ -18,13 +18,15 @@ import java.util.List;
  */
 public class SimpleFileReader {
     
-    public static List<String []> read(String file, String sep) {     
+    public static List<String []> readFirstAndIth(String file, String sep, int colIdx) {     
         List<String []> matrix = new ArrayList<>();
         String line;
+        String[] fields;
         try {
             BufferedReader br = new BufferedReader(new FileReader(file));
             while ((line = br.readLine()) != null) {
-                matrix.add(line.split(sep));
+                fields = line.split(sep);
+                matrix.add(new String[] {fields[0], fields[colIdx]});
             }
             //for (String[] strings : matrix) System.out.println(Arrays.toString(strings));
         } catch(IOException e) {
@@ -32,6 +34,23 @@ public class SimpleFileReader {
         }
         
         return matrix;
+    }
+    
+    public static List<String> readSingleField(String file) {
+        
+        List<String> out = new ArrayList<>();
+        String line;
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            while ((line = br.readLine()) != null) {
+                out.add(line);
+            }
+            //for (String[] strings : matrix) System.out.println(Arrays.toString(strings));
+        } catch(IOException e) {
+            System.out.println(e.getMessage());
+        }
+        
+        return out;
     }
     
 }

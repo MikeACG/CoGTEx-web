@@ -13,7 +13,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import com.google.gson.Gson;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  *
@@ -67,13 +69,16 @@ public class ScatterServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        String versionName = request.getParameter("versionName");
-        String version = request.getParameter("version");
-        
         // tune some settings that remain constant for all plots
-        String groupsPath = "chicoExpress/" + version + "/aux-files/sampleGroups.txt"; // path to separator-based file containing 2 columns: first are the IDs of all samples and second the group (E.g. tissue) of each sample
-        String colorsPath = "chicoExpress/" + version + "/aux-files/sampleColors.txt"; // path to separator-based file containing 2 columns: first are the IDs of all samples and second the color by which each sample is identified (corresponds to the group to which the sample belongs)
+        String groupsPath = "chicoExpress/v0.2A/aux-files/sampleGroups.txt"; // path to separator-based file containing 2 columns: first are the IDs of all samples and second the group (E.g. tissue) of each sample
+        String colorsPath = "chicoExpress/v0.2A/aux-files/sampleColors.txt"; // path to separator-based file containing 2 columns: first are the IDs of all samples and second the color by which each sample is identified (corresponds to the group to which the sample belongs)
+        String cvarsPath = "chicoExpress/webFiles/producedData/cvars.tsv"; // path to separator-based file containing an arbitrary number of columns: first column is the IDs of all samples. Rest of columns are covariate levels for each sample (e.g. Gender is the column with levels male/female)
+        String cvarShapesPath = "chicoExpress/webFiles/producedData/cvarsShapes.tsv"; // path to separator-based file containing an arbitrary number of columns: first column is the IDs of all samples. Rest of columns are the shapes that respresent covariate levels for each sample in google charts format (e.g. Gender is the column with 2 possible shapes)
         String sep = "\t"; // separator which delimits the columns of the last files
+        String cvarHeadersPath = "chicoExpress/webFiles/producedData/cvarsHeaders.txt"; // path to single column file with the names for the columns in cvarsPath/cvarsShapesPath
+        String ensemblsPath = "chicoExpress/webFiles/producedData/ensembls.txt"; // path to single column file with the ids of the genes in the database
+        String gnamesPath = "chicoExpress/webFiles/producedData/symbols.txt"; // path to single column file with the ids of the genes in the database
+        String defaultShape = "circle"; // google charts shape set as default for scatter plot
         int pointSize = 5; // point size in pixels of scatterplot
         int nTicks = 5; // number of axis labels denoting gene expresison values
         int nPerLgndCol = 21; // number of labels per column of the custom legend
@@ -87,14 +92,15 @@ public class ScatterServlet extends HttpServlet {
         // get the internal database id (index) for the requested genes
         String xEnsembl = request.getParameter("xEnsembl");
         String xSymbol = request.getParameter("xSymbol");
-        int xIdx = GeneFinder.main(xEnsembl);
+        int xIdx = GeneFinder.main(xEnsembl, ensemblsPath, gnamesPath);
         String yEnsembl = request.getParameter("yEnsembl");
         String ySymbol = request.getParameter("ySymbol");
-        int yIdx = GeneFinder.main(yEnsembl);
+        int yIdx = GeneFinder.main(yEnsembl, ensemblsPath, gnamesPath);
         
         // get correct filename for requested database
+        String version = request.getParameter("version");
         String database = request.getParameter("db");
-        String dbFile = DatabaseParser.main(database, xIdx, yIdx, version);
+        String dbFile = DatabaseParser.main(database, xIdx, yIdx, version, ensemblsPath);
         String dbName = dbFile.replace(".sqlite", "");
         String db4title = (database.equals(dbName)) ? 
                 database : database + " (" + dbName + ")";
@@ -111,12 +117,25 @@ public class ScatterServlet extends HttpServlet {
         double[] stats = new double[] {gtest.getG(), pearson, spearman};
         
         // set sample groups for the retrieved data
-        HashMap<String, String> groupsMap = FetchSampleMeta.getSampleMap(groupsPath, sep);
+        HashMap<String, String> groupsMap = FetchSampleMeta.getSampleMap(groupsPath, sep, 1);
         y.setGroups(FetchSampleMeta.mapSamples(y.getSamples(), groupsMap));
         
         // set sample colors for the retrieved data
-        HashMap<String, String> colorsMap = FetchSampleMeta.getSampleMap(colorsPath, sep);
+        HashMap<String, String> colorsMap = FetchSampleMeta.getSampleMap(colorsPath, sep, 1);
         y.setColors(FetchSampleMeta.mapSamples(y.getSamples(), colorsMap));
+        
+        // set sample covariates and shapes
+        String cvar = request.getParameter("cvar");
+        List<String> cvarHeaders = SimpleFileReader.readSingleField(cvarHeadersPath);
+        int cvarIdx = cvarHeaders.indexOf(cvar);
+        y.setCvars(Collections.nCopies(y.getSamples().size(), ""));
+        y.setShapes(Collections.nCopies(y.getSamples().size(), defaultShape));
+        if (cvarIdx > -1) {
+            HashMap<String, String> cvarsMap = FetchSampleMeta.getSampleMap(cvarsPath, sep, cvarIdx);
+            y.setCvars(FetchSampleMeta.mapSamples(y.getSamples(), cvarsMap));
+            HashMap<String, String> cvarShapesMap = FetchSampleMeta.getSampleMap(cvarShapesPath, sep, cvarIdx);
+            y.setShapes(FetchSampleMeta.mapSamples(y.getSamples(), cvarShapesMap));
+        }
         
         // construct the objects to be served
         GCScatterObj gcScatterObj = GCOBuilder.build(x, y);
@@ -131,7 +150,7 @@ public class ScatterServlet extends HttpServlet {
         GCoptions gcScatterOptions = new GCoptions(xAxis, yAxis, pointSize, 
                 new ChartArea(in2outPltRatio, in2outPltRatio));
         gcScatterOptions.makeTitle(stats, titleLabels, 
-                db4title, x.getExpression().size(), versionName);
+                db4title, x.getExpression().size(), request.getParameter("versionName"));
         CustomLegend legend = new CustomLegend(
                 HtmlParser.legendTable(y.getSizedGroupLabs(), 
                         y.uniq(y.getColors()), nPerLgndCol));

@@ -21,6 +21,8 @@ public class Gene {
     private List<String> samples;
     private List<String> groups;
     private List<String> colors;
+    private List<String> cvars;
+    private List<String> shapes;
     private List<Double> brks;
     
     public Gene(List<Double> expression, List<String> samples){
@@ -35,6 +37,14 @@ public class Gene {
     
     public void setColors(List<String> colors) {
         this.colors = colors;
+    }
+    
+    public void setCvars(List<String> cvars) {
+        this.cvars = cvars;
+    }
+    
+    public void setShapes(List<String> shapes) {
+        this.shapes = shapes;
     }
     
     public void setBrks(List<Double> brks) {
@@ -84,27 +94,31 @@ public class Gene {
     } 
     
     public List<String> GCOAes() {
+        
         List<String> aes = new ArrayList<>();
         
         int nsamples = samples.size();
-        String color;
+        String color, shape;
         for (int i = 0; i < nsamples; i++) {
             color = colors.get(i);
-            aes.add("fill-color: 'transparent'; stroke-color: " + color);
+            shape = shapes.get(i);
+            aes.add("point {fill-opacity: 0; stroke-color: " + color + "; shape-type: " + shape + ";}");
         }
         
         return aes;
+        
     }
     
     public List<String> GCOTooltips() {
         List<String> tooltips = new ArrayList<>();
         
         int nsamples = samples.size();
-        String id, group;
+        String id, group, cvar;
         for (int i = 0; i < nsamples; i++) {
             id = samples.get(i);
             group = groups.get(i);
-            tooltips.add(id + "\n" + group);
+            cvar = cvars.get(i);
+            tooltips.add(id + "\n" + group + " " + cvar);
         }
         
         return tooltips;

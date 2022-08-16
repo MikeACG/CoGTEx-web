@@ -591,6 +591,7 @@ function requestScatter(yEnsembl, ySymbol) {
         type: "GET",
         data: request,
         success: function(resp) {
+            console.log(resp);
             // global variable assignment of gene list plot
             listPlot = new Coplot(listPlotSuffix, resp.scatter, resp.scatteropts, 
                 resp.brksSeries, new Set, '', resp.legend, resp.contingencyTable, 
@@ -631,6 +632,7 @@ function parseScatterRequest(yEnsembl, ySymbol) {
     request.version = versionName2id(versionedDbSplt[0]);
     request.versionName = versionedDbSplt[0];
     request.contingencyVertical = 'true';
+    request.cvar = document.getElementById('tblPlotShape').value; // options match cvarsHeaders.txt file in webFiles/
     
     return request;
     

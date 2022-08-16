@@ -5,7 +5,6 @@
  */
 package mx.tec.chicoExpress.scatters;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -14,11 +13,11 @@ import java.util.List;
  */
 public class DatabaseParser {
     
-    public static String main(String db, int x, int y, String version) {
+    public static String main(String db, int x, int y, String version, String ensemblsPath) {
         
         String dbName;
         if (db.contains("min_")) { // need to make a query to identify what realization gives the minimum
-            int pairIdx = getPairIdx(x, y, getNgenes(version));
+            int pairIdx = getPairIdx(x, y, getNgenes(ensemblsPath));
             int origin = SQLFetcher.fetchOrigin(pairIdx, db.split("_")[1] + ".sqlite", version);
             dbName = origin + ".sqlite";
         } else if (db.equals("ref")) { // reference database is just a predetermined realization
@@ -30,12 +29,9 @@ public class DatabaseParser {
         return dbName;
     }
     
-    public static int getNgenes(String version) {
+    public static int getNgenes(String genesFilePath) {
         
-        List<String[]> lines = SimpleFileReader.read(
-                "chicoExpress/" + version + "/aux-files/ensembls.txt", "\t");
-        List<String> genes = new ArrayList<>();
-        for (int i = 0; i < lines.size(); i++) genes.add(lines.get(i)[0]);
+        List<String> genes = SimpleFileReader.readSingleField(genesFilePath);
         
         return genes.size();
     }

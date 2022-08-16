@@ -112,6 +112,13 @@
                         <option value="Z-score,20">Realization 20</option>
                       </optgroup>
                     </select>
+                    <label for="plotDatabase">Show variable with points shape:</label>
+                    <select id="tblPlotShape">
+                        <option value="None">None</option>
+                        <option value="Gender">Gender</option>
+                        <option value="Age">Age</option>
+                        <option value="Ischemia">Ischemia</option>
+                    </select>
                 </form>
             </div>
             

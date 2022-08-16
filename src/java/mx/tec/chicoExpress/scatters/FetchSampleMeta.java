@@ -16,10 +16,11 @@ import java.util.List;
  */
 public class FetchSampleMeta {
     
-    public static HashMap<String, String> getSampleMap(String file, String sep) {
+    public static HashMap<String, String> getSampleMap(String file, String sep, int colIdx) {
+        
         HashMap<String, String> map = new HashMap<>();
         
-        List<String[]> meta = SimpleFileReader.read(file, sep);
+        List<String[]> meta = SimpleFileReader.readFirstAndIth(file, sep, colIdx);
         int nrows = meta.size();
         String [] row;
         for (int i = 0; i < nrows; i++) {
@@ -34,6 +35,7 @@ public class FetchSampleMeta {
     }
     
     public static List<String> mapSamples(List<String> samples, HashMap<String, String> map) {
+        
         List<String> meta = new ArrayList<>();
         
         int nsamples = samples.size();

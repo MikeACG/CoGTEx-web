@@ -5,7 +5,6 @@
  */
 package mx.tec.chicoExpress.scatters;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -14,9 +13,9 @@ import java.util.List;
  */
 public class GeneFinder {
     
-    public static int main(String gene) {
+    public static int main(String gene, String ensemblsPath, String namesPath) {
         String cleanGene = clean(gene);
-        String idType = typeId(cleanGene);
+        String idType = typeId(cleanGene, ensemblsPath, namesPath);
         return id2idx(cleanGene, idType);
     }
     
@@ -25,13 +24,13 @@ public class GeneFinder {
         return gene.replaceAll("\\s+", "");
     }
     
-    public static String typeId(String gene) {
+    public static String typeId(String gene, String ensemblsPath, String namesPath) {
         String idType;
         
         if (gene.contains("ENSG")) {
-            idType = "chicoExpress/v0.2A/aux-files/ensembls";
+            idType = ensemblsPath;
         } else if (gene.matches(".*[a-zA-Z].*")) {
-            idType = "chicoExpress/v0.2A/aux-files/symbols";
+            idType = namesPath;
         } else {
             idType = "index";
         }
@@ -45,9 +44,7 @@ public class GeneFinder {
         if (idType.equals("index")) {
             idx = Integer.valueOf(gene);
         } else {
-            List<String[]> lines = SimpleFileReader.read(idType + ".txt", "\t");
-            List<String> genes = new ArrayList<>();
-            for (int i = 0; i < lines.size(); i++) genes.add(lines.get(i)[0]);
+            List<String> genes = SimpleFileReader.readSingleField(idType);
             idx = genes.indexOf(gene) + 1; // internal database indices are 1-based
         }
 

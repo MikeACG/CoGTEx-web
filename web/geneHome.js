@@ -31,6 +31,7 @@
 /* global Plotly */
 var delayMiliseconds = 500; // time waited before searching after typing in input boxes
 var timeout = null; // for waiting until thee user finishes typing to search columns
+var plotCount = 0; // for assigning different div Ids to the plots generated in a session
 // the following object is implemented to search the dataTable more efficiently, 
 // we will be using a custom function programmed for the dataTables search plugin ($.fn.dataTable.ext.search.push)
 // to search which is fired for each row in the table, this object computes and holds the necessary data
@@ -250,6 +251,7 @@ function drawInfo (info) {
     $(infoTableBody).on('click', 'td', function () {
         let tdClasses = [...this.classList];
         if (tdClasses.indexOf("details-control") >= 0) { // only fire event if the cell has the details-control class
+            
             let tr = this.parentNode; // gets row to which the clicked cell belongs
             let row = dataTable.row(tr); // allows to use DataTables features with the row
             let rowIdx = row.index(); // index of clicked row in the context of all rows (even filtered non-visible ones)
@@ -267,8 +269,8 @@ function drawInfo (info) {
                 let ensembl = dataTable.context[0].aoData[rowIdx]._aData[ensemblIdx]; // ensembl of clicked row
                 
                 let plotType = detectTablePlotType();
-                row.child(createDashboard(plotType.divId, plotType.divClass)).show(); // append divs for showing plot of the row
-                switchSpinner(plotType.divId); // insert spinning wheel while waiting
+                row.child(createDashboard(plotType.divId + plotCount, plotType.divClass)).show(); // append divs for showing plot of the row
+                switchSpinner(plotType.divId + plotCount); // insert spinning wheel while waiting
                 tr.classList.add('shown');
                 tablePlotsRequestDispatch(plotType.formId, ensembl, symbol); // request table plot of clicked gene
             }
@@ -288,7 +290,7 @@ function drawInfo (info) {
                 dataTable.row(this).child.hide(); // hide the row's plot if shown otherwise no effect
                 tr.classList.remove('shown'); // remove shown CSS if shown, otherwise no effect
             } else if (trClasses.length > 0) { // row is not highlighted nor it is a child row (these have no classes)
-                cleanDashboard(infoTable, dataTable); // hide any shown rows
+                //cleanDashboard(infoTable, dataTable); // hide any shown rows
                 cleanSelectedGene(infoTableBody); // deselect all rows and switch CSS
                 tr.classList.add('selected'); // highlight row
                 configGeneActions(tr, dataTable); // create actions for selected row (gene)
@@ -318,10 +320,10 @@ function drawInfo (info) {
     });
     
     // when changing pages of the table, sorting the table or searching something:
-    // clean any highlighted rows and shown row plots
-    $(infoTable).on('preDraw.dt', function (){
+    // clean any highlighted rows
+    $(infoTable).on('page.dt order.dt search.dt', function (){
         cleanSelectedGene(infoTableBody);
-        cleanDashboard(infoTable, dataTable);
+    //    cleanDashboard(infoTable, dataTable);
     });
     
 }
@@ -479,9 +481,12 @@ function testInequality(val, inequality) {
 
 // returns the structure of divs used for the table plot of a gene
 function createDashboard(divId, divClass) {
+    
+    
     return '<div id="dashboard" class="dashboardDiv_' + divClass + '">' + 
             '<div id="' + divId + '" class="' + divClass + '"></div>' + 
             '</div>';
+    
 }
 
 // hides all plots that are currently visible in the table
@@ -547,11 +552,13 @@ function requestBox(ensembl, symbol) {
             // display plot
             console.log(resp);
             drawBox(resp.data, resp.layout, resp.medianColors);
+            plotCount++;
         },
         error: function(jqXHR, textStatus, errorThrown) {
             console.log(jqXHR);
             console.log(textStatus);
             console.log(errorThrown);
+            plotCount++;
         },
         dataType: "json"
     });
@@ -576,9 +583,9 @@ function parseBoxRequest(ensembl, symbol) {
 // colors for the median lines of the boxes
 function drawBox(data, layout, medianColors) {
     
-    switchSpinner('expDist_div');
+    switchSpinner('expDist_div' + plotCount);
     
-    let expDistDiv = document.getElementById('expDist_div'); // div created dinamically in gene list row click event
+    let expDistDiv = document.getElementById('expDist_div' + plotCount); // div created dinamically in gene list row click event
     // the then function is a workaround to change the median line color as it is not supported natively by plotly
     Plotly.newPlot(expDistDiv, data, layout).then(gd => {
         // https://community.plotly.com/t/box-and-whisker-median-line-color/1849/2

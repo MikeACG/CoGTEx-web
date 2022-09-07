@@ -46,9 +46,9 @@ function Coplot(dashboardSuffix, scatterData, options, brksSeries,
     this.request = request; // the request to the server that originated this coplot
     
 }
-var listPlot; // global object for the plot shown in the data table
-var listPlotSuffix = 'geneList'; // dashboard suffix for plot in the data table (gene list)
+var listPlots = []; // global array for the plots shown in the data table
 var quickView = []; // global array to keep plot objects neccessary to interact the quick view
+var quickSuffix = 'quick'; // suffix to avoid conflict between ids of the listPlots and quickView arrays
 var delayMiliseconds = 500; // time waited before searching after typing in input boxes
 var timeout = null; // for waiting until the user finishes typing to search columns
 // the following object is implemented to search the dataTable more eeficiently, 
@@ -301,10 +301,10 @@ function drawList (list) {
             let tr = this.parentNode; // gets row to which the clicked cell belongs
             let row = dataTable.row(tr); // allows to use DataTables features with the row
             let rowIdx = row.index(); // index of clicked row in the context of all rows (even filtered non-visible ones)
-
             if ( row.child.isShown() ) { // simply hide the row and switch CSS
                 row.child.hide();
                 tr.classList.remove('shown');
+                rmCoplot(listPlots, rowIdx);
             }
             else {
                 let allHeaders = dataTable.context[0].aoColumns
@@ -314,10 +314,10 @@ function drawList (list) {
                 let ySymbol = dataTable.context[0].aoData[rowIdx]._aData[symbolIdx]; // gene symbol of clicked row
                 let yEnsembl = dataTable.context[0].aoData[rowIdx]._aData[ensemblIdx]; // ensembl of clicked row
                 
-                row.child(createDashboard(listPlotSuffix)).show(); // append divs for showing plot of the row
-                switchSpinner('scatter_div_' + listPlotSuffix); // show spinning wheel while waiting (div created dynamically increateDashboard())
+                row.child(createDashboard(rowIdx)).show(); // append divs for showing plot of the row
+                switchSpinner('scatter_div_' + rowIdx); // show spinning wheel while waiting (div created dynamically in createDashboard())
                 tr.classList.add('shown');
-                requestScatter(yEnsembl, ySymbol); // request box plot of clicked gene
+                requestScatter(yEnsembl, ySymbol, rowIdx); // request box plot of clicked gene
             }
         }
     });
@@ -327,16 +327,18 @@ function drawList (list) {
         let tdClasses = [...this.classList];
         if (tdClasses.indexOf('details-control') < 0) { // do not fire if the clicked cell has the details-control class (i.e. do not deselct the row, just hide/show plot)
             let tr = this.parentNode; // row to which the clicked cell belongs
+            let rowIdx = dataTable.row(tr).index();
             let controlTd = tr.firstChild; // first cell of each rown (first column) is the responsible for details-control
             let trClasses = [...tr.classList];
             if (trClasses.indexOf('selected') >= 0) { // row was already highlighted
                 // hide the child row first to avoid looping the rows of dashboard tables, then clean
+                rmCoplot(listPlots, rowIdx);
                 dataTable.row(this).child.hide(); // hide the row's plot if shown otherwise no effect
                 tr.classList.remove('shown'); // remove shown CSS if shown, otherwise no effect
                 cleanSelectedGene(listTableBody); // deselect all rows and switch CSS
                 controlTd.classList.remove('details-control'); // deactivate details-control from the first cell opf the row
             } else if (trClasses.length > 0) { // row is not highlighted nor it is a child row (these have no classes)
-                cleanDashboard(listTable, dataTable); // hide any shown rows
+                //cleanDashboard(listTable, dataTable); // hide any shown rows
                 cleanSelectedGene(listTableBody); // deselect all rows and switch CSS
                 tr.classList.add('selected'); // highlight row
                 configGeneActions(tr, dataTable); // create actions for selected row (gene)
@@ -374,10 +376,10 @@ function drawList (list) {
     });
     
     // when changing pages of the table, sorting the table or searching something:
-    // clean any highlighted rows and shown row plots
-    $(listTable).on('preDraw.dt', function (){
+    // clean any highlighted rows
+    $(listTable).on('page.dt order.dt search.dt', function (){
         cleanSelectedGene(listTableBody);
-        cleanDashboard(listTable, dataTable);
+    //    cleanDashboard(infoTable, dataTable);
     });
     
 }
@@ -397,7 +399,7 @@ function createDashboard(suffix) {
 // hides all actions associated with the gene from the page
 function cleanSelectedGene(tbody) {
     
-    let trs = [...tbody.getElementsByTagName('tr')];
+    let trs = [...tbody.children]; // this instead of getElementsByTagName works
     trs.forEach(tr => {
         tr.classList.remove('selected');
         tr.firstChild.classList.remove('details-control');
@@ -409,6 +411,7 @@ function cleanSelectedGene(tbody) {
 
 // hides all plots that are currently visible in the table
 // also resets legend related global variables for when a new plot is shown
+//  UNUSED as from when I switched to allow show multiple plots in the table
 function cleanDashboard(listTable, dataTable) {
     
     if (!listPlot) return; // no plot has been requested yet
@@ -421,6 +424,17 @@ function cleanDashboard(listTable, dataTable) {
             dataTable.row(trs[i]).child.hide();
             trs[i].classList.remove('shown');
         }
+    }
+    
+}
+
+// removes a coplot with specified suffix from an array
+function rmCoplot(coplots, suffix) {
+    
+    let sus = coplots.map(coplot => coplot.dashboardSuffix);
+    let idx = sus.find(su => su === suffix);
+    if (idx > -1) {
+        coplots.splice(idx, 1);
     }
     
 }
@@ -583,7 +597,7 @@ jQuery.extend( jQuery.fn.dataTableExt.oSort, {
 
 // requests the server for the data necessary to build a scatterplot between a
 // pair of genes including legend and contigency table info
-function requestScatter(yEnsembl, ySymbol) {
+function requestScatter(yEnsembl, ySymbol, listPlotSuffix) {
     
     let request = parseScatterRequest(yEnsembl, ySymbol);
     $.ajax({
@@ -593,17 +607,18 @@ function requestScatter(yEnsembl, ySymbol) {
         success: function(resp) {
             console.log(resp);
             // global variable assignment of gene list plot
-            listPlot = new Coplot(listPlotSuffix, resp.scatter, resp.scatteropts, 
+            let listPlot = new Coplot(listPlotSuffix, resp.scatter, resp.scatteropts, 
                 resp.brksSeries, new Set, '', resp.legend, resp.contingencyTable, 
                 makeInfoTable(yEnsembl, ySymbol), request);
             // display plot
             parseBrks(listPlot);
-            switchSpinner('scatter_div_' + listPlotSuffix); // hide spinning wheel while waiting (div created dynamically increateDashboard())
+            switchSpinner('scatter_div_' + listPlotSuffix); // hide spinning wheel while waiting (div created dynamically in createDashboard())
             drawScatter(listPlot);
             drawLegend(listPlot);
             drawContingency(listPlot);
             drawScatterActions(true, listPlot);
             drawScatterInfo(listPlot);
+            listPlots.push(listPlot);
         },
         error: function(jqXHR, textStatus, errorThrown) {
             console.log(jqXHR);
@@ -870,11 +885,11 @@ function drawScatterActions(forTable, plotObj) {
             let quickViewDashsDiv = document.getElementById('quickViewDashsDiv');
             let nquickDash = quickView.length;
             // create a dashboard for the plot and add it to dashboards div
-            quickViewDashsDiv.innerHTML += createDashboard(nquickDash); // use dashboard index as suffix for divs
+            quickViewDashsDiv.innerHTML += createDashboard(quickSuffix + nquickDash); // use dashboard index as suffix for divs
             // add current plot data to global quick view array (deep copy)
-            quickView.push($.extend(true, {}, listPlot));
-            quickView[nquickDash].selectedSeries = new Set(listPlot.selectedSeries); // set needs to be handled manually for deep copy
-            quickView[nquickDash].dashboardSuffix = nquickDash; // update with correct suffix for this plot's data
+            quickView.push($.extend(true, {}, plotObj));
+            quickView[nquickDash].selectedSeries = new Set(plotObj.selectedSeries); // set needs to be handled manually for deep copy
+            quickView[nquickDash].dashboardSuffix = quickSuffix + nquickDash; // update with correct suffix for this plot's data
             // create a radio button to show the plot and click it
             let radio = createQuickViewRadio(quickView[nquickDash]);
             $(radio).click();
@@ -896,7 +911,7 @@ function createQuickViewRadio(plotObj) {
     radio.type = 'radio';
     radio.value = plotObj.dashboardSuffix;
     radio.name = 'quickViewRadios';
-    radio.id = 'quickViewRadio_' + plotObj.dashboardSuffix;;
+    radio.id = 'quickViewRadio_' + plotObj.dashboardSuffix;
     let label = document.createElement('label');
     label.setAttribute('for', radio.id);
     label.innerHTML =  plotObj.request.ySymbol + ' - ' + plotObj.request.db + 

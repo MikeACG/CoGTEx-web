@@ -40,7 +40,7 @@ var plotCount = 0; // for assigning different div Ids to the plots generated in 
 var searchObj = {
     perColumnInputs: [], // holds the <input> objects of the footers of the data table 
     shownHeaders: [], // headers of the currently shown rows in the data table
-    readPerColumnInputs: function() { // read the text inputed by the user in the footer of table, which rows are shown can also be inferred from what inputs are catched by the document selector
+    readPerColumnInputs: function() { // read the text inputed by the user in the footer of table, which cols are shown can also be inferred from what inputs are catched by the document selector
        this.perColumnInputs = [...document.getElementsByClassName('searchCol')]; // class given in server
        this.shownHeaders = this.perColumnInputs
             .map(si => si.placeholder.replace('?', '')); // get the headers of shown columns, these are placeholders in the input preceded by '?' (added in the server)
@@ -51,7 +51,7 @@ var searchObj = {
     },
     generalInput: '', // holds what is inputed by the user in the general search box of the data table
     readGeneralInput: function() { // reads the default search box of the data table
-        this.generalInput = $('div.dataTables_filter input').val();
+        this.generalInput = $('div.dataTables_filter input').val().toLowerCase();
     }
 };
 
@@ -64,7 +64,7 @@ $(document).ready(function() {
 });
 
 // switches on/off the visibility of a div with a spinning wheel while waiting for a process
-// if div does not exist in target container it is created snd shown
+// if div does not exist in target container it is created and shown
 function switchSpinner(target) {
     
     let targetDiv = document.getElementById(target);
@@ -235,7 +235,7 @@ function drawInfo (info) {
     
     // configure the general search in the table with delay
     $('div.dataTables_filter input').off('keyup.DT input.DT'); // remove default behavior of general search box
-    $('div.dataTables_filter input').on('keyup', function() {
+    $('div.dataTables_filter input').on('keyup search', function() { // listen to both keyboard presses and clicking the "X"
         let query = $('div.dataTables_filter input').val();
         clearTimeout(timeout);
         timeout = setTimeout(function() {
@@ -413,12 +413,12 @@ $.fn.dataTable.ext.search.push(
                     filter = cleanSearchFilter(searchObj.perColumnInputs[i].value); // standardize the input string
                     perColLogicals.push((filter.type === "inequality") ? 
                         testInequality(row[j], filter.cleanFilter) : // evaluate the mathematical expression
-                                row[j].indexOf(filter.cleanFilter) >= 0); // just test exact substring match
+                                row[j].toLowerCase().indexOf(filter.cleanFilter) >= 0); // just test exact substring match
                 }
                 if (searchObj.generalInput === '') { // user not using the general search box
                     generalLogicals.push(true); // auto passes filter
                 } else { // user wrote something in general search box which works as a literal substring match
-                    generalLogicals.push(row[j].indexOf(searchObj.generalInput) >= 0);
+                    generalLogicals.push(row[j].toLowerCase().indexOf(searchObj.generalInput) >= 0);
                 }
                 i++; // increase index of per col input boxes
             }
@@ -432,7 +432,7 @@ $.fn.dataTable.ext.search.push(
 // parses the user's filter string applied to a column of the DataTable
 function cleanSearchFilter(filter) {
     
-    filter = filter.trim(); // get rid of leading and trailing whitespace
+    filter = filter.trim().toLowerCase(); // get rid of leading and trailing whitespace and make case insensitive
     
     // search for angle brackets and/or equals sign
     let rightIdx = filter.indexOf('<');
@@ -459,7 +459,7 @@ function cleanSearchFilter(filter) {
 function testInequality(val, inequality) {
     
     val = parseFloat(val);
-    if (isNaN(val)) return false; // misisng value in data
+    if (isNaN(val)) return false; // missing value in data
     inequality = inequality.split(" ");
     let expression = inequality[0]; // angle brackets and/or equals signs
     let threshold = parseFloat(inequality[1]); // user's value

@@ -70,7 +70,7 @@ var searchObj = {
     },
     generalInput: '', // holds what is inputed by the user in the general search box of the data table
     readGeneralInput: function() { // reads the default search box of the data table
-        this.generalInput = $('div.dataTables_filter input').val();
+        this.generalInput = $('div.dataTables_filter input').val().toLowerCase();
     }
 };
 var infoObj = {}; // global object to keep the information of all genes shwon in the gene list which can be plotted as part of the coplots
@@ -282,7 +282,7 @@ function drawList (list) {
     
     // configure the general search in the table with delay
     $('div.dataTables_filter input').off('keyup.DT input.DT'); // remove default behavior of general search box
-    $('div.dataTables_filter input').on('keyup', function() {
+    $('div.dataTables_filter input').on('keyup search', function() { // listen to both keyboard presses and clicking the "X"
         let query = $('div.dataTables_filter input').val();
         clearTimeout(timeout);
         timeout = setTimeout(function() {
@@ -412,6 +412,7 @@ function cleanSelectedGene(tbody) {
 // hides all plots that are currently visible in the table
 // also resets legend related global variables for when a new plot is shown
 //  UNUSED as from when I switched to allow show multiple plots in the table
+/*
 function cleanDashboard(listTable, dataTable) {
     
     if (!listPlot) return; // no plot has been requested yet
@@ -427,6 +428,8 @@ function cleanDashboard(listTable, dataTable) {
     }
     
 }
+ * 
+ */
 
 // removes a coplot with specified suffix from an array
 function rmCoplot(coplots, suffix) {
@@ -509,12 +512,12 @@ $.fn.dataTable.ext.search.push(
                     filter = cleanSearchFilter(searchObj.perColumnInputs[i].value); // standardize the input string
                     perColLogicals.push((filter.type === "inequality") ? 
                         testInequality(row[j], filter.cleanFilter) : // evaluate the mathematical expression
-                                row[j].indexOf(filter.cleanFilter) >= 0); // just test exact substring match
+                                row[j].toLowerCase().indexOf(filter.cleanFilter) >= 0); // just test exact substring match
                 }
                 if (searchObj.generalInput === '') { // user not using the general search box
                     generalLogicals.push(true); // auto passes filter
                 } else { // user wrote something in general search box which works as a literal substring match
-                    generalLogicals.push(row[j].indexOf(searchObj.generalInput) >= 0);
+                    generalLogicals.push(row[j].toLowerCase().indexOf(searchObj.generalInput) >= 0);
                 }
                 i++; // increase index of per col input boxes
             }
@@ -529,7 +532,7 @@ $.fn.dataTable.ext.search.push(
 // parses the user's filter string applied to a column of gene list
 function cleanSearchFilter(filter) {
     
-    filter = filter.trim(); // get rid of leading and trailing whitespace
+    filter = filter.trim().toLowerCase(); // get rid of leading and trailing whitespace, make case insensitive
     
     // search for angle brackets and/or equals sign
     let rightIdx = filter.indexOf('<');

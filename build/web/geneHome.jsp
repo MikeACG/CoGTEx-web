@@ -33,9 +33,10 @@
             </form>
             
             <div>
-                <ul id="tabLinksList">
+                <ul id="tabLinksList" class="tab">
                     <li id="oneGeneLink" class="tab tab-active">One gene</li>
                     <li id="networkLink" class="tab">Network</li>
+                    <li id="downloadsLink" class="tab">Downloads</li>
                 </ul>
             </div>
             
@@ -245,6 +246,150 @@
                     
                 </div>
                 
+            </div>
+            
+            <div id="downloadsTab" style="display: none;">
+                
+                <h2>Downloads</h2>
+                
+                <ul>
+                    <li>
+                        <a href="http://victortrevino.bioinformatics.mx:8080/geneinfo.txt" download>geneinfo.txt:</a>
+                        tab-separated file with general information for all genes in the database (same as shown in the "One gene" tab in this page).
+                    </li>
+                    <li>
+                        <a href="http://victortrevino.bioinformatics.mx:8080/geneinfoHeaders.txt" download>geneinfoHeaders.txt:</a>
+                        headers for the previous file.
+                    </li>
+                </ul>
+                
+                <h3>Bulk associations/co-expression</h3>
+                <p>
+                    Each of the following files contain a R object with all
+                    associations calculated for all pairs of genes in the database.
+                    These are useful for custom analysis across many genes. If you
+                    only require associations between a single gene and others,
+                    you may download this information directly from the page of the gene
+                    that you desire without having to operate the raw database. 
+                </p>
+                <table style="border: 1px solid black;">
+                    <tr>
+                        <th>Version</th>
+                        <th>Database</th>
+                        <th>File size</th>
+                        <th>Link</th>
+                    </tr>
+                    <tr>
+                        <td>TPM</td>
+                        <td>Pearson (minimum across 20)</td>
+                        <td>662M</td>
+                        <td><a href="http://victortrevino.bioinformatics.mx:8080/TPM_pearson_min.RData" download>TPM_pearson_min.RData</a></td>
+                    </tr>
+                    <tr>
+                        <td>TPM</td>
+                        <td>Spearman (minimum across 20)</td>
+                        <td>635M</td>
+                        <td><a href="http://victortrevino.bioinformatics.mx:8080/TPM_spearman_min.RData" download>TPM_spearman_min.RData</a></td>
+                    </tr>
+                    <tr>
+                        <td>TPM</td>
+                        <td>G-statistic (minimum across 20)</td>
+                        <td>1.4G</td>
+                        <td><a href="http://victortrevino.bioinformatics.mx:8080/TPM_G_min.RData" download>TPM_G_min.RData</a></td>
+                    </tr>
+                    <tr>
+                        <td>Z-score</td>
+                        <td>Pearson (minimum across 20)</td>
+                        <td>369M</td>
+                        <td><a href="http://victortrevino.bioinformatics.mx:8080/Z-score_pearson_min.RData" download>Z-score_pearson_min.RData</a></td>
+                    </tr>
+                    <tr>
+                        <td>Z-score</td>
+                        <td>Spearman (minimum across 20)</td>
+                        <td>370M</td>
+                        <td><a href="http://victortrevino.bioinformatics.mx:8080/Z-score_spearman_min.RData" download>Z-score_spearman_min.RData</a></td>
+                    </tr>
+                    <tr>
+                        <td>Z-score</td>
+                        <td>G-statistic (minimum across 20)</td>
+                        <td>1.1G</td>
+                        <td><a href="http://victortrevino.bioinformatics.mx:8080/Z-score_G_min.RData" download>Z-score_G_min.RData</a></td>
+                    </tr>
+                </table> 
+                <p>
+                    Databases are represented as the upper triangle of the gene
+                    association/co-expression matrix "flattened" into a vector
+                    in order to avoid saving redundant associations and the diagonal elements.
+                    To further optimize space, the vectors are of integer type and only
+                    save two positions of the decimal part of the estimates. We provide the following
+                    <a href="http://victortrevino.bioinformatics.mx:8080/getIndexPairs.r" download>R function</a>
+                    to programatically extract associations between gene <code>idx</code> and all <code>n</code> genes in the database:
+                </p>
+                <pre>
+                    #' @param idx Index of gene in the database 
+                    #' @param db CoGTEx raw associations/co-expression vector
+                    #' @param n Number of genes in the database
+                    #' @return Vector of associations/co-expression estimates between i and all genes in the database
+                    getIndexPairs <- function(idx, db, n) {
+
+                        pidx <- idx - 1
+                        if (idx > 1) {
+
+                            i <- j <- 1:n
+                            i[idx:n] <- j[1:pidx] <- idx
+
+                            k <- i - 1
+                            pairIdxs <- (k * n) - ( (k * (k + 1)) / 2 ) + (j - i)
+                            pairIdxs[idx] <- 0L
+
+                        } else {
+
+                            pairIdxs <- 1:(n - 1)
+
+                        }
+
+                        r <- db[pairIdxs]
+                        return(append(r, 0L, after = pidx)) # own association is set to 0
+
+                    }
+                </pre>
+                <p>
+                    The following
+                    <a href="http://victortrevino.bioinformatics.mx:8080/example.r" download>R script</a>
+                    script is an example of usage:
+                </p>
+                <pre>
+                    # load the downloaded data
+                    source("getIndexPairs.r")
+                    x <- setNames(
+                        read.csv("geneinfo.txt", sep = "\t", header = FALSE, stringsAsFactors = FALSE),
+                        readLines("geneinfoHeaders.txt")
+                    )
+                    n <- nrow(x)
+                    print(load("TPM_pearson_min.RData"))
+                    # m
+
+                    # get the index in the database of genes of interest
+                    query <- c("GAPDH", "TP53", "GH1")
+                    cogtexIdxs <- match(query, x$'Gene Symbol')
+                    estimates <- lapply(cogtexIdxs, getIndexPairs, m, n)
+                    estimates <- lapply(estimates, '/', 100) # divide over 100 to turn integers to real values
+
+                    # returned vector elements are always in the same order (the database order)
+                    estimates <- setNames(lapply(estimates, setNames, x$'Gene Symbol'), query)
+                    lapply(estimates, head, 5) # each vector in the list is of length n
+                    # $GAPDH
+                    #        WASH7P         OR4F5 RP11-34P13.15 RP11-34P13.16 RP11-34P13.14 
+                    #         -0.18          0.32         -0.26         -0.31         -0.01 
+
+                    # $TP53
+                    #        WASH7P         OR4F5 RP11-34P13.15 RP11-34P13.16 RP11-34P13.14 
+                    #          0.20         -0.30          0.29          0.35          0.20 
+
+                    # $GH1
+                    #        WASH7P         OR4F5 RP11-34P13.15 RP11-34P13.16 RP11-34P13.14 
+                    #          0.03         -0.07          0.04          0.03          0.00
+                </pre>
             </div>
             
         </div>

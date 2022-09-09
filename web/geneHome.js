@@ -134,6 +134,7 @@ function configPageControls() {
     // configure each tab's control
     setupTab('oneGene', tabDivs, tabLinksList);
     setupTab('network', tabDivs, tabLinksList);
+    setupTab('downloads', tabDivs, tabLinksList);
     
     // show page controls after table is drawn
     let tabIndependentDiv = document.getElementById('tabIndependentDiv');

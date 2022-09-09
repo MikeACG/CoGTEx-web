@@ -329,7 +329,7 @@
                     #' @param idx Index of gene in the database 
                     #' @param db CoGTEx raw associations/co-expression vector
                     #' @param n Number of genes in the database
-                    #' @return Vector of associations/co-expression estimates between i and all genes in the database
+                    #' @return Vector of associations/co-expression estimates between idx and all genes in the database
                     getIndexPairs <- function(idx, db, n) {
 
                         pidx <- idx - 1

@@ -19,6 +19,43 @@ body {
     margin: 0px;
 }
 
+/* tabs menu style */
+ul.tab {
+    display: flex;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+    border-bottom: 2px solid #79B7E7;
+    font-size: 15px;
+}
+
+/* li element tab style */
+li.tab {
+    cursor: pointer;
+    border: 2px solid #C5DBEC;
+    border-bottom: 0;
+    padding: 10px;
+    color: #2E6EAA;
+}
+li.tab:hover {
+    background-color: #DFEEF8;
+    border-color: #79B7E7;
+    border-bottom: 0;
+}
+li.tab-active {
+    background-color: white;
+    border-color: #79B7E7;
+    border-bottom: 0;
+    color: #E2700A;
+}
+
+/* style of div that shows the tab content */
+#tabsDiv {
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
 td.details-control {
     background: url(resources/details_open.png) no-repeat right;
     cursor: pointer;
@@ -179,3 +216,26 @@ div.scatterInfoDiv table tr th:not(:hover) {
     position: relative;
     display: inline-block;
 }
+
+.results{
+    position: relative;
+    width: 45%;
+    overflow: hidden;
+}
+
+.results:before{
+    content: "";
+    display: block;
+    padding-top: 100%;
+}
+
+.resultsScatter{
+    position:  absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    color: white;
+    text-align: center;
+}
+

@@ -26,7 +26,7 @@
  * - Add version of data to scatter plot title
  */
 
-/* global google */
+/* global google, Plotly */
 google.charts.load('current', {'packages':['corechart']});
 
 // constructor for objects keeping plot information
@@ -92,7 +92,7 @@ function versionName2id(vn) {
 // previous page.
 $(document).ready(function() {
     
-    switchSpinner('listDiv');
+    switchSpinner('tabsDiv');
     
     $.ajax({
         url: "ListServlet",
@@ -205,12 +205,28 @@ function configPageControls() {
     plotVersionSelect.value = listVersionSelect.value = version;
     */
     
+    // get array of tab divs and of list elements associated with the tabs
+    let tabDivs = [...document.getElementById('tabsDiv').children];
+    let tabLinksList = [...document.getElementById('tabLinksList').children];
+    
+    // configure each tab's control
+    setupTab('geneList', tabDivs, tabLinksList, 'block');
+    setupTab('analysis', tabDivs, tabLinksList, 'flex');
+    
+    // show page controls after table is drawn
+    let tabIndependentDiv = document.getElementById('tabIndependentDiv');
+    tabIndependentDiv.style.display = "block";
+    
+    // show gene list tab
+    let geneListTab = document.getElementById('geneListTab');
+    geneListTab.style.display = "block";
+    
     // set other parameters of this page to the defaults for a new page of the same kind for another gene if user requests it
     let versionedListDb = document.getElementById('Order database').value;
     document.getElementById('listSize').value = document.getElementById('List size').value; // hidden box filled with jstl on page load
     document.getElementById('listDb').value = versionedListDb; // hidden box filled with jstl on page load
     
-    // get database and set default plot option the corresponding
+    // get database and set default plot option according to that
     let versionedListDbSplt = versionedListDb.split("_"); // sep given in geneHome page
     let listVersion = versionedListDbSplt[0];
     let listDb = versionedListDbSplt[1];
@@ -254,6 +270,81 @@ function configPageControls() {
     // show plot preferences
     document.getElementById('plotPreferencesDiv').style.display = 'block';
     
+    
+    // configure analysis tab elements that require reactivity and aesthetics
+    configureAnalysisTab();
+    
+    
+}
+
+function configureAnalysisTab() {
+    
+    $('#analysisType').selectmenu({width: '100%'});
+    
+    let analysisForms = [...document.getElementById('analysisFormsDiv').children]
+            .filter(child => child.tagName === "FORM");
+    let i, form, selects, inputs, radios, sliders, submitButton;
+    for (i = 0; i < analysisForms.length; i++) {
+        
+        form = analysisForms[i];
+        selects = [...form.getElementsByTagName('SELECT')];
+        selects.forEach(select => $(select).selectmenu({width: '100%'}));
+        inputs = [...form.getElementsByTagName('INPUT')];
+        radios = inputs.filter(input => input.type === 'radio');
+        radios.forEach(radio => $(radio).checkboxradio());
+        sliders = inputs.filter(input => input.type === 'range');
+        sliders.forEach(slider => $(slider).slider());
+        submitButton = form.getElementsByTagName('BUTTON')[0];
+        $(submitButton).button();
+        $(submitButton).click(function(e) {
+            e.preventDefault();
+            document.getElementById('resultScatter').innerHTML = '';
+            switchSpinner('resultScatter');
+            requestAnalysis(e.target.id);
+        });
+        
+    }
+    
+    $('#npointsScatter').on('selectmenuchange', function() {
+        if (this.value !== 'max') {
+            $('#guidePointsScatterDiv').show();
+        } else {
+            $('#guidePointsScatterDiv').hide();
+        }
+    });
+    
+}
+
+// conditions hiding a target element if the sensor is a certain value
+function hideIfSense(sensorId, val, targetId) {
+    
+    let sensor = document.getElementById(sensorId);
+    let target = document.getElementById(targetId);
+    
+    sensor.addEventListener('change', function(e) {
+        if (e.target.value === val) {
+            target.style.display = 'none';
+        } else {
+            target.style.display = 'block';
+        }
+    });
+    
+}
+
+// configures a tab to control the page
+function setupTab(tabPrefix, tabDivs, tabLinksList, display) {
+    
+    let link = document.getElementById(tabPrefix + 'Link');
+    
+    link.addEventListener('click', function(e) {
+        if (!e.target.classList.contains('tab-active')) {
+            tabDivs.forEach(div => div.style.display = 'none'); // hide all tabs
+            tabDivs.find(div => div.id === tabPrefix + 'Tab').style.display = display; // show the div associated with the tab
+            tabLinksList.forEach(link => link.classList.remove('tab-active')); // set all tabs inactive
+            e.target.classList.add('tab-active'); // set this tab active
+        }
+    });
+    
 }
 
 // draws and configures the gene list once the server sends it using the
@@ -278,7 +369,7 @@ function drawList (list) {
     let dataTable = $(listTable).DataTable(list.dataTable);
     searchObj.readPerColumnInputs(); // now that table is drawn, update shown cols
     // hide the waiting div
-    switchSpinner('listDiv');
+    switchSpinner('tabsDiv');
     
     // configure the general search in the table with delay
     $('div.dataTables_filter input').off('keyup.DT input.DT'); // remove default behavior of general search box
@@ -317,7 +408,7 @@ function drawList (list) {
                 row.child(createDashboard(rowIdx)).show(); // append divs for showing plot of the row
                 switchSpinner('scatter_div_' + rowIdx); // show spinning wheel while waiting (div created dynamically in createDashboard())
                 tr.classList.add('shown');
-                requestScatter(yEnsembl, ySymbol, rowIdx); // request box plot of clicked gene
+                requestCoplot(yEnsembl, ySymbol, rowIdx); // request box plot of clicked gene
             }
         }
     });
@@ -600,11 +691,11 @@ jQuery.extend( jQuery.fn.dataTableExt.oSort, {
 
 // requests the server for the data necessary to build a scatterplot between a
 // pair of genes including legend and contigency table info
-function requestScatter(yEnsembl, ySymbol, listPlotSuffix) {
+function requestCoplot(yEnsembl, ySymbol, listPlotSuffix) {
     
-    let request = parseScatterRequest(yEnsembl, ySymbol);
+    let request = parseCoplotRequest(yEnsembl, ySymbol);
     $.ajax({
-        url: "ScatterServlet",
+        url: "CoplotServlet",
         type: "GET",
         data: request,
         success: function(resp) {
@@ -616,11 +707,11 @@ function requestScatter(yEnsembl, ySymbol, listPlotSuffix) {
             // display plot
             parseBrks(listPlot);
             switchSpinner('scatter_div_' + listPlotSuffix); // hide spinning wheel while waiting (div created dynamically in createDashboard())
-            drawScatter(listPlot);
+            drawCoplot(listPlot);
             drawLegend(listPlot);
             drawContingency(listPlot);
-            drawScatterActions(true, listPlot);
-            drawScatterInfo(listPlot);
+            drawCoplotActions(true, listPlot);
+            drawCoplotInfo(listPlot);
             listPlots.push(listPlot);
         },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -635,7 +726,7 @@ function requestScatter(yEnsembl, ySymbol, listPlotSuffix) {
 
 // creates an object which the server can read to return the data for the scatter plot
 // element names/ids correspond to the ones sent from the form of the previous page to this page
-function parseScatterRequest(yEnsembl, ySymbol) {
+function parseCoplotRequest(yEnsembl, ySymbol) {
     
     let versionedDb = document.getElementById('plotDatabase').value;
     let versionedDbSplt = versionedDb.split(","); // separator given in this page's JSP
@@ -697,7 +788,7 @@ function parseBrks(plotObj) {
 
 // draws chart inside div given a literal object and options formated as per 
 // the google charts documentation
-function drawScatter(plotObj) {
+function drawCoplot(plotObj) {
     
     let gcTable = new google.visualization.DataTable(plotObj.scatterDataMod);
     let scatterDiv = document.getElementById('scatter_div_' + plotObj.dashboardSuffix); // div created dinamically in gene list row click event
@@ -834,7 +925,7 @@ function updateChart(plotObj) {
         plotObj.scatterDataMod = plotObj.scatterData;
     }
 
-    drawScatter(plotObj); // redraw chart
+    drawCoplot(plotObj); // redraw chart
 }
 
 // visually restores the legend to its original state (no clicked/highlighted cells)
@@ -858,7 +949,7 @@ function drawContingency(plotObj) {
 }
 
 // draws some action buttons related to the curretly shown scatter plot
-function drawScatterActions(forTable, plotObj) {
+function drawCoplotActions(forTable, plotObj) {
     
     // a nested div is neccessary to avoid taking space of other divs in the dashboard when displaying buttons with the same size through display: table
     let scatterActionsDiv = document.getElementById('scatterActions_div_' + plotObj.dashboardSuffix); // div created dinamically in gene list row click event
@@ -933,11 +1024,11 @@ function createQuickViewRadio(plotObj) {
             }
             // show corresponding dashboard and plot
             targetDash.style.display = "flex";
-            updateChart(plotObj); // update is used instead of drawScatter to keep the series shown when changing between dashboards
+            updateChart(plotObj); // update is used instead of drawCoplot to keep the series shown when changing between dashboards
             drawLegend(plotObj);
             drawContingency(plotObj);
-            drawScatterActions(false, plotObj);
-            drawScatterInfo(plotObj);
+            drawCoplotActions(false, plotObj);
+            drawCoplotInfo(plotObj);
     });
     
     // add to DOM and style radio button
@@ -1016,10 +1107,88 @@ function createPlotCompDropdown(plotObj) {
     return plotCompWrapperDiv;
 }
 
-function drawScatterInfo(plotObj) {
+function drawCoplotInfo(plotObj) {
 
     let scatterInfoDiv = document.
             getElementById('scatterInfo_div_' + plotObj.dashboardSuffix); // div created dinamically in gene list row click event
     scatterInfoDiv.innerHTML = plotObj.info;
+    
+}
+
+// requests the server for the data necessary to build a analysis result
+// from the set of analyses available in the analysis tab
+function requestAnalysis(analysisType) {
+    
+    let analysis = parseAnalysisRequest(analysisType);
+    
+    $.ajax({
+        url: analysis.servlet,
+        type: "GET",
+        data: analysis.data,
+        success: function(resp) {
+            console.log(resp);
+            analysis.result = resp;
+            analysis.display();
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.log(jqXHR);
+            console.log(textStatus);
+            console.log(errorThrown);
+        },
+        dataType: "json"
+    });
+ 
+}
+
+// creates an object with all info necessary to request the server for an analysis
+// and displaying the results
+function parseAnalysisRequest(analysisType) {
+    
+    let analysis = {
+        data: {},
+        servlet: '',
+        result: {},
+        display: function() {}
+    };
+    
+    let versionedDb;
+    switch (analysisType) {
+        
+        case 'submitScatter':
+            versionedDb = document.getElementById('xvarScatter').value.split(",");
+            analysis.data.xVersion = versionedDb[0];
+            analysis.data.xdb = versionedDb[1];
+            versionedDb = document.getElementById('yvarScatter').value.split(",");
+            analysis.data.yVersion = versionedDb[0];
+            analysis.data.ydb = versionedDb[1];
+            analysis.data.xEnsembl = document.getElementById('Gene ensembl').value;
+            analysis.data.xsymbol = document.getElementById('Gene symbol').value;
+            analysis.data.yEnsembl = analysis.data.xEnsembl;
+            analysis.data.ysymbol = analysis.data.xsymbol;
+            analysis.data.sortGuide = document.getElementById('guidePointsScatter').value;
+            analysis.data.compSize = document.getElementById('npointsScatter').value;
+            analysis.data.xformat = document.querySelector('input[name="xformatScatter"]:checked').value;
+            analysis.data.yformat = document.querySelector('input[name="yformatScatter"]:checked').value;
+            analysis.servlet = 'ScatterServlet';
+            analysis.display = function() {
+                drawScatter(this.result);
+            };
+            break;
+        
+    }
+    
+    console.log(analysis);
+    return analysis;
+    
+}
+
+// draws a scatter plot as result of request using scatter type analysis
+function drawScatter(result) {
+    
+    result.trace.opacity = document.getElementById("alphaScatter").value;
+    let targetDiv = document.getElementById("resultScatter");
+    
+    switchSpinner('resultScatter');
+    Plotly.newPlot(targetDiv, [result.trace], result.layout);
     
 }

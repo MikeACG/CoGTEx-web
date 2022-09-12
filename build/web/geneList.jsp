@@ -17,6 +17,7 @@
         <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.3.1/js/buttons.html5.min.js"></script>
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
         <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+        <script type="text/javascript" src="https://cdn.plot.ly/plotly-2.3.1.min.js"></script>
         <script type="text/javascript" src="geneList.js"></script>
         <link rel="stylesheet" href="http://code.jquery.com/ui/1.13.0/themes/redmond/jquery-ui.css"> 
         <link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css">
@@ -36,182 +37,355 @@
             </h2>
         </div>
         
-        <div id="listDiv">
+        <div id="tabIndependentDiv" style="display: none;">
             
-            <div id="plotPreferencesDiv" style="display: none;">
-                <h3 class="title">Table plots preferences</h3>
-                <form id="plotPreferencesForm">
-                    <label for="plotDatabase">Database for figures:</label>
-                    <select id="plotDatabase">
-                      <optgroup label="Common">
-                        <option value="TPM,min_pearson">TPM Robust Minimum Pearson Realization</option>
-                        <option value="TPM,min_spearman">TPM Robust Minimum Spearman Realization</option>
-                        <option value="TPM,min_G">TPM Robust Minimum G Realization</option>
-                        <option value="Z-score,min_pearson">Z-score Robust Minimum Pearson Realization</option>
-                        <option value="Z-score,min_spearman">Z-score Robust Minimum Spearman Realization</option>
-                        <option value="Z-score,min_G">Z-score Robust Minimum G Realization</option>
-                      </optgroup>
-                      <optgroup label="Covariates">
-                        <option value="TPM,SEX_female">TPM Female Only</option>
-                        <option value="TPM,SEX_male">TPM Male Only</option>
-                        <option value="TPM,AGE_less50">TPM Age < 50</option>
-                        <option value="TPM,AGE_50-59">TPM Age 50-59</option>
-                        <option value="TPM,AGE_more59">TPM Age > 59</option>
-                        <option value="TPM,SMTSISCH_High">TPM Ischemia High</option>
-                        <option value="TPM,SMTSISCH_Low">TPM Ischemia Low</option>
-                        <option value="Z-score,SEX_female">Z-score Female Only</option>
-                        <option value="Z-score,SEX_male">Z-score Male Only</option>
-                        <option value="Z-score,AGE_less50">Z-score Age < 50</option>
-                        <option value="Z-score,AGE_50-59">Z-score Age 50-59</option>
-                        <option value="Z-score,AGE_more59">Z-score Age > 59</option>
-                        <option value="Z-score,SMTSISCH_High">Z-score Ischemia High</option>
-                        <option value="Z-score,SMTSISCH_Low">Z-score Ischemia Low</option>  
-                      </optgroup>
-                      <optgroup label="TPM Individual Realizations (1..20)">
-                        <option value="TPM,1">Realization 1</option>
-                        <option value="TPM,2">Realization 2</option>
-                        <option value="TPM,3">Realization 3</option>
-                        <option value="TPM,4">Realization 4</option>
-                        <option value="TPM,5">Realization 5</option>
-                        <option value="TPM,6">Realization 6</option>
-                        <option value="TPM,7">Realization 7</option>
-                        <option value="TPM,8">Realization 8</option>
-                        <option value="TPM,9">Realization 9</option>
-                        <option value="TPM,10">Realization 10</option>
-                        <option value="TPM,11">Realization 11</option>
-                        <option value="TPM,12">Realization 12</option>
-                        <option value="TPM,13">Realization 13</option>
-                        <option value="TPM,14">Realization 14</option>
-                        <option value="TPM,15">Realization 15</option>
-                        <option value="TPM,16">Realization 16</option>
-                        <option value="TPM,17">Realization 17</option>
-                        <option value="TPM,18">Realization 18</option>
-                        <option value="TPM,19">Realization 19</option>
-                        <option value="TPM,20">Realization 20</option>
-                      </optgroup>
-                      <optgroup label="Z-score Individual Realizations (1..20)">
-                        <option value="Z-score,1">Realization 1</option>
-                        <option value="Z-score,2">Realization 2</option>
-                        <option value="Z-score,3">Realization 3</option>
-                        <option value="Z-score,4">Realization 4</option>
-                        <option value="Z-score,5">Realization 5</option>
-                        <option value="Z-score,6">Realization 6</option>
-                        <option value="Z-score,7">Realization 7</option>
-                        <option value="Z-score,8">Realization 8</option>
-                        <option value="Z-score,9">Realization 9</option>
-                        <option value="Z-score,10">Realization 10</option>
-                        <option value="Z-score,11">Realization 11</option>
-                        <option value="Z-score,12">Realization 12</option>
-                        <option value="Z-score,13">Realization 13</option>
-                        <option value="Z-score,14">Realization 14</option>
-                        <option value="Z-score,15">Realization 15</option>
-                        <option value="Z-score,16">Realization 16</option>
-                        <option value="Z-score,17">Realization 17</option>
-                        <option value="Z-score,18">Realization 18</option>
-                        <option value="Z-score,19">Realization 19</option>
-                        <option value="Z-score,20">Realization 20</option>
-                      </optgroup>
-                    </select>
-                    <label for="plotDatabase">Show variable with points shape:</label>
-                    <select id="tblPlotShape">
-                        <option value="None">None</option>
-                        <option value="Gender">Gender</option>
-                        <option value="Age">Age</option>
-                        <option value="Ischemia">Ischemia</option>
-                    </select>
-                </form>
-            </div>
-            
-            <div id="selectorsDiv">
-                Table fields: 
-                <div id="selectorsCheckboxesDiv">
-            </div>
-            
-            <table class="display" id="listTable"></table>
-            
-            <div id="listPreferencesDiv" style="display: none;">
-                <h3 class="title">Associations list preferences for selected gene</h3>
-                <form id="listPreferencesForm" action="geneList.jsp" method="get" target="_blank">
-                    <input type="hidden" id="listGeneSymbol" name="Gene symbol">
-                    <input type="hidden" id="listGeneEnsembl" name="Gene ensembl">
-                    <label for="listSize">Number of top associations to show:</label>
-                    <select  name="List size" id="listSize">
-                        <option value="100">100</option>
-                        <option value="200">200</option>
-                        <option value="300" >300</option>
-                        <option value="500">500</option>
-                        <option value="1000">1000</option>
-                        <option value="2500">2500</option>
-                        <option value="5000">5000</option>
-                        <option value="10000">10000</option>
-                        <option value="20000">20000</option>
-                        <option value="max">All (may take a while depending on your computer specs)</option>
-                    </select>
-                    <br>
-                    <label for="listDb">Database to order top associations:</label>
-                    <select name="Order database" id="listDb">
-                        <optgroup label="Common">
-                            <option value="TPM_Min Pearson">TPM Robust Minimum Pearson Realization</option>
-                            <option value="TPM_Min Spearman">TPM Robust Minimum Spearman Realization</option>
-                            <option value="TPM_Min G">TPM Robust Minimum G Realization</option>
-                            <option value="Z-score_Min Pearson">Z-score Robust Minimum Pearson Realization</option>
-                            <option value="Z-score_Min Spearman">Z-score Robust Minimum Spearman Realization</option>
-                            <option value="Z-score_Min G">Z-score Robust Minimum G Realization</option>
-                        </optgroup>
-                        <optgroup label="Covariates">
-                            <option value="TPM_Pearson Age 50-59">TPM Age 50-59</option>
-                            <option value="TPM_Pearson Age <50">TPM Age < 50</option>
-                            <option value="TPM_Pearson Age >59">TPM Age > 59</option>
-                            <option value="TPM_Pearson Sex Female">TPM Female Only</option>
-                            <option value="TPM_Pearson Sex Male">TPM Male Only</option>
-                            <option value="TPM_Pearson Ischemia High">TPM Ischemia High</option>
-                            <option value="TPM_Pearson Ischemia Low">TPM Ischemia Low</option>
-                            <option value="Z-score_Pearson Age 50-59">Z-score Age 50-59</option>
-                            <option value="Z-score_Pearson Age <50">Z-score Age < 50</option>
-                            <option value="Z-score_Pearson Age >59">Z-score Age > 59</option>
-                            <option value="Z-score_Pearson Sex Female">Z-score Female Only</option>
-                            <option value="Z-score_Pearson Sex Male">Z-score Male Only</option>
-                            <option value="Z-score_Pearson Ischemia High">Z-score Ischemia High</option>
-                            <option value="Z-score_Pearson Ischemia Low">Z-score Ischemia Low</option>   
-                        </optgroup>
-                    </select>
-                    <br>
-                    <input type="submit" id="listPreferencesSubmit">
-                </form>
-            </div>
-
-            <br>
-                
-            <div id="externalLinksDiv" style="display: none;">
-                <h3 class="title">External links for selected gene</h3>
-                <a id="genecardsLink" target="_blank"></a>
-                <a id="ncbiLink" target="_blank"></a>
-                <a id="ensemblLink" target="_blank"></a>
-                <a id="gtexLink" target="_blank"></a>
-            </div>
-
+            <div>
+                <ul id="tabLinksList" class="tab">
+                    <li id="geneListLink" class="tab tab-active">Associations</li>
+                    <li id="analysisLink" class="tab">Analysis</li>
+                </ul>
             </div>
             
         </div>
         
-        <br>
+        <div id="tabsDiv">
+            
+            <div id="geneListTab" style="display: none">
+                
+                <div id="listDiv">
+
+                    <div id="plotPreferencesDiv" style="display: none;">
+                        <h3 class="title">Table plots preferences</h3>
+                        <form id="plotPreferencesForm">
+                            <label for="plotDatabase">Database for figures:</label>
+                            <select id="plotDatabase">
+                              <optgroup label="Common">
+                                <option value="TPM,min_pearson">TPM Robust Minimum Pearson Realization</option>
+                                <option value="TPM,min_spearman">TPM Robust Minimum Spearman Realization</option>
+                                <option value="TPM,min_G">TPM Robust Minimum G Realization</option>
+                                <option value="Z-score,min_pearson">Z-score Robust Minimum Pearson Realization</option>
+                                <option value="Z-score,min_spearman">Z-score Robust Minimum Spearman Realization</option>
+                                <option value="Z-score,min_G">Z-score Robust Minimum G Realization</option>
+                              </optgroup>
+                              <optgroup label="Covariates">
+                                <option value="TPM,SEX_female">TPM Female Only</option>
+                                <option value="TPM,SEX_male">TPM Male Only</option>
+                                <option value="TPM,AGE_less50">TPM Age < 50</option>
+                                <option value="TPM,AGE_50-59">TPM Age 50-59</option>
+                                <option value="TPM,AGE_more59">TPM Age > 59</option>
+                                <option value="TPM,SMTSISCH_High">TPM Ischemia High</option>
+                                <option value="TPM,SMTSISCH_Low">TPM Ischemia Low</option>
+                                <option value="Z-score,SEX_female">Z-score Female Only</option>
+                                <option value="Z-score,SEX_male">Z-score Male Only</option>
+                                <option value="Z-score,AGE_less50">Z-score Age < 50</option>
+                                <option value="Z-score,AGE_50-59">Z-score Age 50-59</option>
+                                <option value="Z-score,AGE_more59">Z-score Age > 59</option>
+                                <option value="Z-score,SMTSISCH_High">Z-score Ischemia High</option>
+                                <option value="Z-score,SMTSISCH_Low">Z-score Ischemia Low</option>  
+                              </optgroup>
+                              <optgroup label="TPM Individual Realizations (1..20)">
+                                <option value="TPM,1">Realization 1</option>
+                                <option value="TPM,2">Realization 2</option>
+                                <option value="TPM,3">Realization 3</option>
+                                <option value="TPM,4">Realization 4</option>
+                                <option value="TPM,5">Realization 5</option>
+                                <option value="TPM,6">Realization 6</option>
+                                <option value="TPM,7">Realization 7</option>
+                                <option value="TPM,8">Realization 8</option>
+                                <option value="TPM,9">Realization 9</option>
+                                <option value="TPM,10">Realization 10</option>
+                                <option value="TPM,11">Realization 11</option>
+                                <option value="TPM,12">Realization 12</option>
+                                <option value="TPM,13">Realization 13</option>
+                                <option value="TPM,14">Realization 14</option>
+                                <option value="TPM,15">Realization 15</option>
+                                <option value="TPM,16">Realization 16</option>
+                                <option value="TPM,17">Realization 17</option>
+                                <option value="TPM,18">Realization 18</option>
+                                <option value="TPM,19">Realization 19</option>
+                                <option value="TPM,20">Realization 20</option>
+                              </optgroup>
+                              <optgroup label="Z-score Individual Realizations (1..20)">
+                                <option value="Z-score,1">Realization 1</option>
+                                <option value="Z-score,2">Realization 2</option>
+                                <option value="Z-score,3">Realization 3</option>
+                                <option value="Z-score,4">Realization 4</option>
+                                <option value="Z-score,5">Realization 5</option>
+                                <option value="Z-score,6">Realization 6</option>
+                                <option value="Z-score,7">Realization 7</option>
+                                <option value="Z-score,8">Realization 8</option>
+                                <option value="Z-score,9">Realization 9</option>
+                                <option value="Z-score,10">Realization 10</option>
+                                <option value="Z-score,11">Realization 11</option>
+                                <option value="Z-score,12">Realization 12</option>
+                                <option value="Z-score,13">Realization 13</option>
+                                <option value="Z-score,14">Realization 14</option>
+                                <option value="Z-score,15">Realization 15</option>
+                                <option value="Z-score,16">Realization 16</option>
+                                <option value="Z-score,17">Realization 17</option>
+                                <option value="Z-score,18">Realization 18</option>
+                                <option value="Z-score,19">Realization 19</option>
+                                <option value="Z-score,20">Realization 20</option>
+                              </optgroup>
+                            </select>
+                            <label for="plotDatabase">Show variable with points shape:</label>
+                            <select id="tblPlotShape">
+                                <option value="None">None</option>
+                                <option value="Gender">Gender</option>
+                                <option value="Age">Age</option>
+                                <option value="Ischemia">Ischemia</option>
+                            </select>
+                        </form>
+                    </div>
+
+                    <div id="selectorsDiv">
+                        Table fields: 
+                        <div id="selectorsCheckboxesDiv">
+                    </div>
+
+                    <table class="display" id="listTable"></table>
+
+                    <div id="listPreferencesDiv" style="display: none;">
+                        <h3 class="title">Associations list preferences for selected gene</h3>
+                        <form id="listPreferencesForm" action="geneList.jsp" method="get" target="_blank">
+                            <input type="hidden" id="listGeneSymbol" name="Gene symbol">
+                            <input type="hidden" id="listGeneEnsembl" name="Gene ensembl">
+                            <label for="listSize">Number of top associations to show:</label>
+                            <select  name="List size" id="listSize">
+                                <option value="100">100</option>
+                                <option value="200">200</option>
+                                <option value="300" >300</option>
+                                <option value="500">500</option>
+                                <option value="1000">1000</option>
+                                <option value="2500">2500</option>
+                                <option value="5000">5000</option>
+                                <option value="10000">10000</option>
+                                <option value="20000">20000</option>
+                                <option value="max">All (may take a while depending on your computer specs)</option>
+                            </select>
+                            <br>
+                            <label for="listDb">Database to order top associations:</label>
+                            <select name="Order database" id="listDb">
+                                <optgroup label="Common">
+                                    <option value="TPM_Min Pearson">TPM Robust Minimum Pearson Realization</option>
+                                    <option value="TPM_Min Spearman">TPM Robust Minimum Spearman Realization</option>
+                                    <option value="TPM_Min G">TPM Robust Minimum G Realization</option>
+                                    <option value="Z-score_Min Pearson">Z-score Robust Minimum Pearson Realization</option>
+                                    <option value="Z-score_Min Spearman">Z-score Robust Minimum Spearman Realization</option>
+                                    <option value="Z-score_Min G">Z-score Robust Minimum G Realization</option>
+                                </optgroup>
+                                <optgroup label="Covariates">
+                                    <option value="TPM_Pearson Age 50-59">TPM Age 50-59</option>
+                                    <option value="TPM_Pearson Age <50">TPM Age < 50</option>
+                                    <option value="TPM_Pearson Age >59">TPM Age > 59</option>
+                                    <option value="TPM_Pearson Sex Female">TPM Female Only</option>
+                                    <option value="TPM_Pearson Sex Male">TPM Male Only</option>
+                                    <option value="TPM_Pearson Ischemia High">TPM Ischemia High</option>
+                                    <option value="TPM_Pearson Ischemia Low">TPM Ischemia Low</option>
+                                    <option value="Z-score_Pearson Age 50-59">Z-score Age 50-59</option>
+                                    <option value="Z-score_Pearson Age <50">Z-score Age < 50</option>
+                                    <option value="Z-score_Pearson Age >59">Z-score Age > 59</option>
+                                    <option value="Z-score_Pearson Sex Female">Z-score Female Only</option>
+                                    <option value="Z-score_Pearson Sex Male">Z-score Male Only</option>
+                                    <option value="Z-score_Pearson Ischemia High">Z-score Ischemia High</option>
+                                    <option value="Z-score_Pearson Ischemia Low">Z-score Ischemia Low</option>   
+                                </optgroup>
+                            </select>
+                            <br>
+                            <input type="submit" id="listPreferencesSubmit">
+                        </form>
+                    </div>
+
+                    <br>
+
+                    <div id="externalLinksDiv" style="display: none;">
+                        <h3 class="title">External links for selected gene</h3>
+                        <a id="genecardsLink" target="_blank"></a>
+                        <a id="ncbiLink" target="_blank"></a>
+                        <a id="ensemblLink" target="_blank"></a>
+                        <a id="gtexLink" target="_blank"></a>
+                    </div>
+
+                    </div>
+
+                </div>
+
+                <br>
+
+                <div id="quickViewDiv" style="display: none;">
+                    <h2 class="title">Quick View</h2>
+                    <div id="quickViewRadiosDiv"></div>
+                    <div id="quickViewDashsDiv"></div>
+                    <form id="plotComparisonForm" style="display: none;" action="plotComparison.jsp" method="get" target="_blank">
+                        <input type="hidden" id="xgeneEnsembl" name="xEnsembl">
+                        <input type="hidden" id="y0geneEnsembl" name="y0Ensembl">
+                        <input type="hidden" id="y1geneEnsembl" name="y1Ensembl">
+                        <input type="hidden" id="xgeneSymbol" name="xSymbol">
+                        <input type="hidden" id="y0geneSymbol" name="y0Symbol">
+                        <input type="hidden" id="y1geneSymbol" name="y1Symbol">
+                        <input type="hidden" id="plot0Version" name="plot0V">
+                        <input type="hidden" id="plot1Version" name="plot1V">
+                        <input type="hidden" id="plot0Database" name="plot0Db">
+                        <input type="hidden" id="plot1Database" name="plot1Db">
+                    </form>
+                </div>
         
-        <div id="quickViewDiv" style="display: none;">
-            <h2 class="title">Quick View</h2>
-            <div id="quickViewRadiosDiv"></div>
-            <div id="quickViewDashsDiv"></div>
-            <form id="plotComparisonForm" style="display: none;" action="plotComparison.jsp" method="get" target="_blank">
-                <input type="hidden" id="xgeneEnsembl" name="xEnsembl">
-                <input type="hidden" id="y0geneEnsembl" name="y0Ensembl">
-                <input type="hidden" id="y1geneEnsembl" name="y1Ensembl">
-                <input type="hidden" id="xgeneSymbol" name="xSymbol">
-                <input type="hidden" id="y0geneSymbol" name="y0Symbol">
-                <input type="hidden" id="y1geneSymbol" name="y1Symbol">
-                <input type="hidden" id="plot0Version" name="plot0V">
-                <input type="hidden" id="plot1Version" name="plot1V">
-                <input type="hidden" id="plot0Database" name="plot0Db">
-                <input type="hidden" id="plot1Database" name="plot1Db">
-            </form>
+            </div>
+            
+            <div id="analysisTab" style="display: none">
+                
+                <div id="analysisDiv" style="width: 25%">
+                
+                    <h2 style="color: #1166AA;">Choose analysis type:</h2>
+
+                    <div id="analysisPreferencesDiv">
+
+                        <form id="analysisTypeForm">
+                            <label for="analysisType">Analysis:</label>
+                            <select id="analysisType">
+                                <option value="scatter">Scatter plot</option>
+                            </select>
+                        </form>
+
+                    </div>
+
+                    <div id="analysisFormsDiv">
+
+                        <h2>Analysis options</h2>
+
+                        <form id ="scatterPreferencesForm">
+
+                            <h3>x axis</h3>
+                            <label for="xvarScatter">Variable:</label>
+                            <select id="xvarScatter">
+                                <optgroup label="Common">
+                                <option value="TPM,Min Pearson">TPM Robust Minimum Pearson Realization</option>
+                                <option value="TPM,Min Spearman">TPM Robust Minimum Spearman Realization</option>
+                                <option value="TPM,Min G">TPM Robust Minimum G Realization</option>
+                                <option value="Z-score,Min Pearson">Z-score Robust Minimum Pearson Realization</option>
+                                <option value="Z-score,Min Spearman">Z-score Robust Minimum Spearman Realization</option>
+                                <option value="Z-score,Min G">Z-score Robust Minimum G Realization</option>
+                              </optgroup>
+                              <optgroup label="Covariates">
+                                <option value="TPM,Sex female">TPM Female Only</option>
+                                <option value="TPM,Sex male">TPM Male Only</option>
+                                <option value="TPM,Age <50">TPM Age < 50</option>
+                                <option value="TPM,Age 50-59">TPM Age 50-59</option>
+                                <option value="TPM,Age >59">TPM Age > 59</option>
+                                <option value="TPM,Ischemia High">TPM Ischemia High</option>
+                                <option value="TPM,Ischemia Low">TPM Ischemia Low</option>
+                                <option value="Z-score,Sex female">Z-score Female Only</option>
+                                <option value="Z-score,Sex male">Z-score Male Only</option>
+                                <option value="Z-score,Age <50">Z-score Age < 50</option>
+                                <option value="Z-score,Age 50-59">Z-score Age 50-59</option>
+                                <option value="Z-score,Age >59">Z-score Age > 59</option>
+                                <option value="Z-score,Ischemia High">Z-score Ischemia High</option>
+                                <option value="Z-score,Ischemia Low">Z-score Ischemia Low</option>  
+                              </optgroup>
+                            </select>
+                            <fieldset>
+                                <div>
+                                    <label for="xrawScatter">Estimates</label>
+                                    <input type="radio" value="estimates" id="xrawScatter" name="xformatScatter">  
+                                </div>
+                                <div>
+                                    <label for="xrankScatter">Rank of estimates</label>
+                                    <input type="radio" value="ranks" id="xrankScatter" name="xformatScatter"> 
+                                </div>
+                                <div>
+                                    <label for="xlogrankScatter">Log10(Rank of estimates)</label>
+                                    <input type="radio" value="logranks" id="xlogrankScatter" name="xformatScatter" checked>
+                                </div>
+                            </fieldset>
+
+                            <h3>y axis</h3>
+                            <label for="yvarScatter">Variable:</label>
+                            <select id="yvarScatter">
+                                <optgroup label="Common">
+                                <option value="TPM,Min Pearson">TPM Robust Minimum Pearson Realization</option>
+                                <option value="TPM,Min Spearman">TPM Robust Minimum Spearman Realization</option>
+                                <option value="TPM,Min G">TPM Robust Minimum G Realization</option>
+                                <option value="Z-score,Min Pearson" selected>Z-score Robust Minimum Pearson Realization</option>
+                                <option value="Z-score,Min Spearman">Z-score Robust Minimum Spearman Realization</option>
+                                <option value="Z-score,Min G">Z-score Robust Minimum G Realization</option>
+                              </optgroup>
+                              <optgroup label="Covariates">
+                                <option value="TPM,Sex female">TPM Female Only</option>
+                                <option value="TPM,Sex male">TPM Male Only</option>
+                                <option value="TPM,Age <50">TPM Age < 50</option>
+                                <option value="TPM,Age 50-59">TPM Age 50-59</option>
+                                <option value="TPM,Age >59">TPM Age > 59</option>
+                                <option value="TPM,Ischemia High">TPM Ischemia High</option>
+                                <option value="TPM,Ischemia Low">TPM Ischemia Low</option>
+                                <option value="Z-score,Sex female">Z-score Female Only</option>
+                                <option value="Z-score,Sex male">Z-score Male Only</option>
+                                <option value="Z-score,Age <50">Z-score Age < 50</option>
+                                <option value="Z-score,Age 50-59">Z-score Age 50-59</option>
+                                <option value="Z-score,Age >59">Z-score Age > 59</option>
+                                <option value="Z-score,Ischemia High">Z-score Ischemia High</option>
+                                <option value="Z-score,Ischemia Low">Z-score Ischemia Low</option>  
+                              </optgroup>
+                            </select>
+                            <fieldset>
+                                <div>
+                                    <label for="yrawScatter">Estimates</label>
+                                    <input type="radio" value="estimates" id="yrawScatter" name="yformatScatter">  
+                                </div>
+                                <div>
+                                    <label for="yrankScatter">Rank of estimates</label>
+                                    <input type="radio" value="ranks" id="yrankScatter" name="yformatScatter"> 
+                                </div>
+                                <div>
+                                    <label for="ylogrankScatter">Log10(Rank of estimates)</label>
+                                    <input type="radio" value="logranks" id="ylogrankScatter" name="yformatScatter" checked>
+                                </div>
+                            </fieldset>
+
+                            <h3>Plot</h3>
+                            <div>
+                                <label for="npointsScatter">Number of top associations to plot:</label>
+                                <select id="npointsScatter">
+                                    <option value="100">100</option>
+                                    <option value="200">200</option>
+                                    <option value="300" >300</option>
+                                    <option value="500">500</option>
+                                    <option value="1000">1000</option>
+                                    <option value="2500">2500</option>
+                                    <option value="5000">5000</option>
+                                    <option value="10000">10000</option>
+                                    <option value="20000">20000</option>
+                                    <option value="max" selected>All (33447)</option>
+                                </select>
+                            </div>
+                            <div id="guidePointsScatterDiv" style="display: none">
+                                <label for="guidePointsScatter">Decide top associations according to:</label>
+                                <select id="guidePointsScatter">
+                                    <option value="x">Variable x</option>
+                                    <option value="y">Variable y</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label for="alphaScatter">Points transparency:</label>
+                                <input type="range" min="0" max="1" step="0.1" value="0.5" id="alphaScatter">
+                            </div>
+
+                            <button type="submit" id="submitScatter">Plot!</button>
+
+                        </form>
+
+                    </div>
+                
+                </div>
+                
+                <div id="analysisResultsDiv" class="results">
+                    
+                    <div id="resultScatter" class="resultsScatter"></div>
+                    
+                </div>
+                
+            </div>
+            
         </div>
         
         <div id="logosDiv">

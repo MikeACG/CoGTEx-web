@@ -1,155 +1,138 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package mx.tec.chicoExpress.scatters;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 /**
  *
- * @author INTEL
+ * @author mike-
  */
 public class Gene {
     
-    private List<Double> expression;
-    private List<String> samples;
-    private List<String> groups;
-    private List<String> colors;
-    private List<String> cvars;
-    private List<String> shapes;
-    private List<Double> brks;
+    private double x;
+    private double y;
+    private double logrankx;
+    private double logranky;
+    private double rankx;
+    private double ranky;
+    private int idx;
+    private String ensembl;
+    private String symbol;
     
-    public Gene(List<Double> expression, List<String> samples){
-        super();
-        this.expression = expression;
-        this.samples = samples;
-    }
-    
-    public void setGroups(List<String> groups) {
-        this.groups = groups;
-    }
-    
-    public void setColors(List<String> colors) {
-        this.colors = colors;
-    }
-    
-    public void setCvars(List<String> cvars) {
-        this.cvars = cvars;
-    }
-    
-    public void setShapes(List<String> shapes) {
-        this.shapes = shapes;
-    }
-    
-    public void setBrks(List<Double> brks) {
-        this.brks = brks;
-    }
-    
-    public List<Double> getExpression() {
-        return expression;
-    }
-    
-    public double getExp(int i) {
-        return expression.get(i);
-    }
-    
-    public List<String> getSamples() {
-        return samples;
-    }
-    
-    public List<String> getColors() {
-        return colors;
-    }
-    
-    public List<String> getGroups() {
-        return groups;
-    }
-    
-    public String getGroup(int i) {
-        return groups.get(i);
-    }
-    
-    public List<String> getSizedGroupLabs() {
+    public Gene() {
         
-        List<String> ugroups = uniq(groups);
-        int n = ugroups.size();
-        HashMap<String,Integer> map = new HashMap<>();
-        for (int i = 0; i < n; i++) map.put(ugroups.get(i), i);
         
-        int[] counts = new int[n];
-        for (int i = 0; i < groups.size(); i++) counts[map.get(groups.get(i))]++;
         
-        List<String> out = new ArrayList<>();
-        for (int i = 0; i < n; i++) {
-            out.add(ugroups.get(i) + " (n = " + counts[i] + ")");
+    }
+    
+    public void setX(double x) {
+        
+        this.x = x;
+        
+    }
+    
+    public void setY(double y) {
+        
+        this.y = y;
+        
+    }
+    
+    public void setIdx(int idx) {
+        
+        this.idx = idx;
+        
+    }
+    
+    public void setMetadata(String meta, String what) {
+        
+        switch (what) {
+            
+            case "ensembl":
+                this.ensembl = meta;
+                break;
+            
+            case "symbol":
+                this.symbol = meta;
+                break;
+            
         }
         
-        return out;
-    } 
+    }
     
-    public List<String> GCOAes() {
+    public void setRank(double rank, String what) {
         
-        List<String> aes = new ArrayList<>();
+        if (what.equals("x")) {
+            
+            this.rankx = rank;
         
-        int nsamples = samples.size();
-        String color, shape;
-        for (int i = 0; i < nsamples; i++) {
-            color = colors.get(i);
-            shape = shapes.get(i);
-            aes.add("point {fill-opacity: 0; stroke-color: " + color + "; shape-type: " + shape + ";}");
+        } else {
+            
+            this.ranky = rank;
+            
         }
         
-        return aes;
-        
     }
     
-    public List<String> GCOTooltips() {
-        List<String> tooltips = new ArrayList<>();
+    public void setLogrank(double logrank, String what) {
         
-        int nsamples = samples.size();
-        String id, group, cvar;
-        for (int i = 0; i < nsamples; i++) {
-            id = samples.get(i);
-            group = groups.get(i);
-            cvar = cvars.get(i);
-            tooltips.add(id + "\n" + group + " " + cvar);
+        if (what.equals("x")) {
+            
+            this.logrankx = logrank;
+        
+        } else {
+            
+            this.logranky = logrank;
+            
         }
         
-        return tooltips;
     }
     
-    public double getMinExp() {
-        return brks.get(2);
-    }
-    
-    public double getMaxExp() {
-        return brks.get(3);
-    }
-    
-    public double getBrk(int i) {
-        return brks.get(i);
-    }
-
-    public List<String> uniq(List<String> attr) {
-        Set<String> s = new HashSet<>();
-        List<String> u = new ArrayList<>();
+    public double getRaw(String what) {
         
-        int n = attr.size();
-        String tmp;
-        for (int i = 0; i < n; i++) {
-            tmp = attr.get(i);
-            if (!s.contains(tmp)) {
-                s.add(tmp);
-                u.add(tmp);
-            }
+        if (what.equals("x")) return Math.abs(this.x);
+        return Math.abs(this.y);
+        
+    }
+    
+    public double getRawSigned(String what) {
+        
+        if (what.equals("x")) return this.x;
+        return this.y;
+        
+    }
+    
+    public double getRank(String what) {
+        
+        if (what.equals("x")) return this.rankx;
+        return this.ranky;
+        
+    }
+    
+    public double getLogrank(String what) {
+        
+        if (what.equals("x")) return this.logrankx;
+        return this.logranky;
+        
+    }
+    
+    public String getMetadata(String what) {
+        
+        String meta = "";
+        switch (what) {
+            
+            case "ensembl":
+                meta = this.ensembl;
+                break;
+            
+            case "symbol":
+                meta = this.symbol;
+                break;
+            
         }
         
-        return u;
+        return meta;
+        
     }
+    
 }

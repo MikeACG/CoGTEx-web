@@ -28,10 +28,6 @@
         
         <div id="tabIndependentDiv" style="display: none;">
             
-            <form id="versionChangeForm" style="display: none;" target="_blank" action="geneHome.jsp">
-                <input type="hidden" id="versionChangeInput" name="Version">
-            </form>
-            
             <div>
                 <ul id="tabLinksList" class="tab">
                     <li id="oneGeneLink" class="tab tab-active">One gene</li>
@@ -101,7 +97,6 @@
                                         <option value="Pearson Ischemia High">Ischemia High</option>
                                         <option value="Pearson Ischemia Low">Ischemia Low</option>    
                                     </optgroup> 
-                                  </optgroup>
                                 </select>
                                 <label for="coexpRankCompVersion1">Ranking 1 version:</label>
                                 <select id="coexpRankCompVersion1">

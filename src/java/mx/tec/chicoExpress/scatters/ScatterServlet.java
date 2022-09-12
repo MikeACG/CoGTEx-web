@@ -1,25 +1,23 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
  */
 package mx.tec.chicoExpress.scatters;
 
+import com.google.gson.Gson;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Collections;
+import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import com.google.gson.Gson;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
 
 /**
  *
- * @author INTEL
+ * @author mike
  */
 @WebServlet(name = "ScatterServlet", urlPatterns = {"/ScatterServlet"})
 public class ScatterServlet extends HttpServlet {
@@ -36,15 +34,15 @@ public class ScatterServlet extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
+        try ( PrintWriter out = response.getWriter()) {
             /* TODO output your page here. You may use following sample code. */
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
-            out.println("<title>Servlet ScatterServlet</title>");            
+            out.println("<title>Servlet RankCompServlet</title>");            
             out.println("</head>");
             out.println("<body>");
-            out.println("<h1>Servlet ScatterServlet at " + request.getContextPath() + "</h1>");
+            out.println("<h1>Servlet RankCompServlet at " + request.getContextPath() + "</h1>");
             out.println("</body>");
             out.println("</html>");
         }
@@ -57,117 +55,138 @@ public class ScatterServlet extends HttpServlet {
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
-     * 
-     * TODO;
-     * - Show doubled statistic values on contingency table cells (check correctness)
-     * - Include long (more descriptive) group names in tooltips
-     * - Include gene name in the coordinates of tooltips
-     * - Make tooltips of breaks (lines binning expression) prettier
-     * 
      */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        // tune some settings that remain constant for all plots
-        String groupsPath = "chicoExpress/v0.2A/aux-files/sampleGroups.txt"; // path to separator-based file containing 2 columns: first are the IDs of all samples and second the group (E.g. tissue) of each sample
-        String colorsPath = "chicoExpress/v0.2A/aux-files/sampleColors.txt"; // path to separator-based file containing 2 columns: first are the IDs of all samples and second the color by which each sample is identified (corresponds to the group to which the sample belongs)
-        String cvarsPath = "chicoExpress/webFiles/producedData/cvars.tsv"; // path to separator-based file containing an arbitrary number of columns: first column is the IDs of all samples. Rest of columns are covariate levels for each sample (e.g. Gender is the column with levels male/female)
-        String cvarShapesPath = "chicoExpress/webFiles/producedData/cvarsShapes.tsv"; // path to separator-based file containing an arbitrary number of columns: first column is the IDs of all samples. Rest of columns are the shapes that respresent covariate levels for each sample in google charts format (e.g. Gender is the column with 2 possible shapes)
-        String sep = "\t"; // separator which delimits the columns of the last files
-        String cvarHeadersPath = "chicoExpress/webFiles/producedData/cvarsHeaders.txt"; // path to single column file with the names for the columns in cvarsPath/cvarsShapesPath
-        String ensemblsPath = "chicoExpress/webFiles/producedData/ensembls.txt"; // path to single column file with the ids of the genes in the database
-        String gnamesPath = "chicoExpress/webFiles/producedData/symbols.txt"; // path to single column file with the ids of the genes in the database
-        String defaultShape = "circle"; // google charts shape set as default for scatter plot
-        int pointSize = 5; // point size in pixels of scatterplot
-        int nTicks = 5; // number of axis labels denoting gene expresison values
-        int nPerLgndCol = 21; // number of labels per column of the custom legend
-        String in2outPltRatio = "80%"; // percentage of the plot's div ocuppied by the inner part of the chart. Increasing expands plotting area but axis labels can get cut out for example
-        double axLabsSize = 10; // size in pixels of the axes labels
-        boolean xAxLabRotate = false; // rotate x-axis labels 90 degrees?
-        boolean yAxLabRotate = true; // rotate y-axis labels 90 degrees?
-        int nBrksPerGene = 2; // number of total breaks to be plotted in the data, currently each gene is binned into 3 discrete categories so there are 2 breaks per gene
-        String[] titleLabels = new String[] {"G:", "pearson:", "spearman:"}; // labels for the information in the title of the plots, must correspond with the "stats" array assembled later
+        String ensemblsPath = "chicoExpress/webFiles/producedData/ensembls.txt"; // path to single column file with the ensembls for all genes in the database (assumes same set for all possible versions)
+        String symbolsPath = "chicoExpress/webFiles/producedData/symbols.txt"; // path to single column file with the gene symbols for all genes in the database (assumes same set for all possible versions)
+        String perGeneSep = "\t"; // field separator for the files in perGeneDir
+        int perGeneDirSize = 500; // maximum number of files per folder in perGeneDir
+        double formatFactor = 100.0;
         
-        // get the internal database id (index) for the requested genes
+        // get paths to source files
+        // x variable
+        String xVersionName = request.getParameter("xVersion");
+        String xVersion = DirStructurer.version2folder(xVersionName);
+        String xPerGeneDir = "chicoExpress/" + xVersion + "/per-gene-tables/"; // path to directory containing folders organizing separator-based gz files with the gene lists of each gene
+        String xPerGeneHeadersPath = "chicoExpress/webFiles/producedData/geneListHeaders/" + xVersion; // path to file containing a single column with the headers that one wants to display for each of the columns of the gene lists, they correspond with to the columns in any perGeneFile
         String xEnsembl = request.getParameter("xEnsembl");
-        String xSymbol = request.getParameter("xSymbol");
-        int xIdx = GeneFinder.main(xEnsembl, ensemblsPath, gnamesPath);
+        String xListPath = xPerGeneDir + DirStructurer.ensembl2folder(xEnsembl, 
+                perGeneDirSize) + xEnsembl + ".txt.gz";
+        // y variable
+        String yVersionName = request.getParameter("yVersion");
+        String yVersion = DirStructurer.version2folder(yVersionName);
+        String yPerGeneDir = "chicoExpress/" + yVersion + "/per-gene-tables/"; // path to directory containing folders organizing separator-based gz files with the gene lists of each gene
+        String yPerGeneHeadersPath = "chicoExpress/webFiles/producedData/geneListHeaders/" + yVersion; // path to file containing a single column with the headers that one wants to display for each of the columns of the gene lists, they correspond with to the columns in any perGeneFile
         String yEnsembl = request.getParameter("yEnsembl");
-        String ySymbol = request.getParameter("ySymbol");
-        int yIdx = GeneFinder.main(yEnsembl, ensemblsPath, gnamesPath);
+        String yListPath = yPerGeneDir + DirStructurer.ensembl2folder(yEnsembl, 
+                perGeneDirSize) + yEnsembl + ".txt.gz";
         
-        // get correct filename for requested database
-        String version = request.getParameter("version");
-        String database = request.getParameter("db");
-        String dbFile = DatabaseParser.main(database, xIdx, yIdx, version, ensemblsPath);
-        String dbName = dbFile.replace(".sqlite", "");
-        String db4title = (database.equals(dbName)) ? 
-                database : database + " (" + dbName + ")";
-        
-        // get the data associated with the genes from the requested database
-        Gene x = SQLFetcher.main(xIdx, dbFile, version);
-        Gene y = SQLFetcher.main(yIdx, dbFile, version);
-        
-        // compute association measures for the pair of genes
-        GTest gtest = new GTest(x, y);
-        gtest.run();
-        double pearson = PearsonCorrelation.main(x, y);
-        double spearman = SpearmanCorrelation.main(x, y);
-        double[] stats = new double[] {gtest.getG(), pearson, spearman};
-        
-        // set sample groups for the retrieved data
-        HashMap<String, String> groupsMap = FetchSampleMeta.getSampleMap(groupsPath, sep, 1);
-        y.setGroups(FetchSampleMeta.mapSamples(y.getSamples(), groupsMap));
-        
-        // set sample colors for the retrieved data
-        HashMap<String, String> colorsMap = FetchSampleMeta.getSampleMap(colorsPath, sep, 1);
-        y.setColors(FetchSampleMeta.mapSamples(y.getSamples(), colorsMap));
-        
-        // set sample covariates and shapes
-        String cvar = request.getParameter("cvar");
-        List<String> cvarHeaders = SimpleFileReader.readSingleField(cvarHeadersPath);
-        int cvarIdx = cvarHeaders.indexOf(cvar);
-        y.setCvars(Collections.nCopies(y.getSamples().size(), ""));
-        y.setShapes(Collections.nCopies(y.getSamples().size(), defaultShape));
-        if (cvarIdx > -1) {
-            HashMap<String, String> cvarsMap = FetchSampleMeta.getSampleMap(cvarsPath, sep, cvarIdx);
-            y.setCvars(FetchSampleMeta.mapSamples(y.getSamples(), cvarsMap));
-            HashMap<String, String> cvarShapesMap = FetchSampleMeta.getSampleMap(cvarShapesPath, sep, cvarIdx);
-            y.setShapes(FetchSampleMeta.mapSamples(y.getSamples(), cvarShapesMap));
+        // if x and y are the same gene in same version some things can be sped up later
+        boolean yIsX = xEnsembl.equals(yEnsembl) && xVersion.equals(yVersion);
+
+        // get the x variable data
+        List<String> xPerGeneHeaders = 
+                SimpleFileReader.readSingleField(xPerGeneHeadersPath);
+        String xDatabase = request.getParameter("xdb");
+        int xcolIdx = xPerGeneHeaders.indexOf(xDatabase);
+        List<Gene> genes;
+        if (yIsX) { // only have to read 1 file
+            String yDatabase = request.getParameter("ydb");
+            int ycolIdx = xPerGeneHeaders.indexOf(yDatabase);
+            genes = GzTableReader.readCols2genes(xListPath, 
+                    perGeneSep, formatFactor, xcolIdx, ycolIdx);
+        } else {
+            genes = GzTableReader.readCol2genes(xListPath, 
+                    perGeneSep, formatFactor, xcolIdx);
         }
         
-        // construct the objects to be served
-        GCScatterObj gcScatterObj = GCOBuilder.build(x, y);
-        Axis xAxis = new Axis(new ViewWindow(x.getMinExp(), x.getMaxExp()), 
-                new String[] {xEnsembl, xSymbol}, 
-                Interpolater.doubSeq(x.getMinExp(), x.getMaxExp(), nTicks), 
-                axLabsSize, xAxLabRotate);
-        Axis yAxis = new Axis(new ViewWindow(y.getMinExp(), y.getMaxExp()), 
-                new String[] {yEnsembl, ySymbol}, 
-                Interpolater.doubSeq(y.getMinExp(), y.getMaxExp(), nTicks), 
-                axLabsSize, yAxLabRotate);
-        GCoptions gcScatterOptions = new GCoptions(xAxis, yAxis, pointSize, 
-                new ChartArea(in2outPltRatio, in2outPltRatio));
-        gcScatterOptions.makeTitle(stats, titleLabels, 
-                db4title, x.getExpression().size(), request.getParameter("versionName"));
-        CustomLegend legend = new CustomLegend(
-                HtmlParser.legendTable(y.getSizedGroupLabs(), 
-                        y.uniq(y.getColors()), nPerLgndCol));
-        boolean contingencyVertical = Boolean.parseBoolean(request.getParameter("contingencyVertical"));
-        ContingencyTable contingency = new ContingencyTable(
-                (contingencyVertical) ? HtmlParser.contingencyTableVertical(gtest) : 
-                        HtmlParser.contingencyTableHorizontal(gtest));
-        String[] brkSeriesIdxs = Interpolater.intSeqAsStr(gcScatterObj.getGroupsN(), 
-                nBrksPerGene * 2);
+        // get the y variable data
+        String yDatabase = request.getParameter("ydb");
+        if (!yIsX) {
+            List<String> yPerGeneHeaders = 
+                SimpleFileReader.readSingleField(yPerGeneHeadersPath);
+            int ycolIdx = yPerGeneHeaders.indexOf(yDatabase);
+            GzTableReader.readCol2geneList(genes, yListPath,
+                    perGeneSep, formatFactor, ycolIdx);
+        }
         
-        // pack the objects to be served and serve them
-        ServedObj r = new ServedObj(gcScatterObj, gcScatterOptions, legend, 
-                contingency, brkSeriesIdxs);
-        String json = new Gson().toJson(r);
+        // add metadata to the data points
+        SimpleFileReader.readSingleField2geneList(genes, ensemblsPath, "ensembl");
+        SimpleFileReader.readSingleField2geneList(genes, symbolsPath, "symbol");
+        
+        // rank the values of the axis that is NOT the guide first
+        String sortGuide = request.getParameter("sortGuide");
+        String antiGuide = sortGuide.equals("x") ? "y" : "x";
+        GeneListOperator geneListOperator = new GeneListOperator();
+        Collections.sort(genes, geneListOperator.new GeneComparator(antiGuide));
+        Collections.reverse(genes); // descending order
+        geneListOperator.rankAvgTie(genes, antiGuide);
+        
+        // rank the values of the axis that IS the guide last
+        Collections.sort(genes, geneListOperator.new GeneComparator(sortGuide));
+        Collections.reverse(genes); // descending order
+        geneListOperator.rankAvgTie(genes, sortGuide);
+        
+        // filter data points to display if neccessary
+        String compSize = request.getParameter("compSize");
+        if (!compSize.equals("max")) geneListOperator.head(genes, Integer.parseInt(compSize));
+        
+        // log of ranks if neccessary
+        String xformat = request.getParameter("xformat");
+        String yformat = request.getParameter("yformat");
+        if (xformat.equals("logranks")) geneListOperator.logRank(genes, "x");
+        if (yformat.equals("logranks")) geneListOperator.logRank(genes, "y");
+        
+        // pack to plotly object
+        PlotlyScatter plotlyScatter = new PlotlyScatter();
+        switch (xformat) {
+            
+            case "estimates":
+              plotlyScatter.trace.setX(geneListOperator.getEstimates(genes, "x"));
+              break;
+              
+            case "ranks":
+              plotlyScatter.trace.setX(geneListOperator.getRanks(genes, "x"));
+              break;
+              
+            case "logranks":
+              plotlyScatter.trace.setX(geneListOperator.getLogranks(genes, "x"));
+              break;
+            
+        }
+        switch (yformat) {
+            
+            case "estimates":
+              plotlyScatter.trace.setY(geneListOperator.getEstimates(genes, "y"));
+              break;
+              
+            case "ranks":
+              plotlyScatter.trace.setY(geneListOperator.getRanks(genes, "y"));
+              break;
+              
+            case "logranks":
+              plotlyScatter.trace.setY(geneListOperator.getLogranks(genes, "y"));
+              break;
+            
+        }
+        plotlyScatter.trace.setText(genes);
+        
+        String xsymbol = request.getParameter("xsymbol");
+        String ysymbol = request.getParameter("ysymbol");
+        plotlyScatter.layout.xaxis.setTitle(xEnsembl, xsymbol, xformat, xVersionName, xDatabase);
+        plotlyScatter.layout.yaxis.setTitle(yEnsembl, ysymbol, yformat, yVersionName, yDatabase);
+        //plotlyScatter.layout.xaxis.setRange(new int[]{1, m});
+        //plotlyScatter.layout.yaxis.setRange(new int[]{1, m});
+        
+        // serve
+        String json = new Gson().toJson(plotlyScatter);
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         response.getWriter().write(json); 
+        
     }
 
     /**

@@ -147,7 +147,7 @@
                     
                     <div id="selectorsDiv"></div>
                     
-                    <table class="display" id="infoTable"></table>
+                    <table class="display" id="infoTable" style="width: 100%"></table>
 
                 </div>
 

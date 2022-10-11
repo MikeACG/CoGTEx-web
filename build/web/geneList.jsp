@@ -143,7 +143,7 @@
                         <div id="selectorsCheckboxesDiv">
                     </div>
 
-                    <table class="display" id="listTable"></table>
+                    <table class="display" id="listTable" style="width: 100%"></table>
 
                     <div id="listPreferencesDiv" style="display: none;">
                         <h3 class="title">Associations list preferences for selected gene</h3>
@@ -267,20 +267,20 @@
                                 <option value="Z-score,Min G">Z-score Robust Minimum G Realization</option>
                               </optgroup>
                               <optgroup label="Covariates">
-                                <option value="TPM,Sex female">TPM Female Only</option>
-                                <option value="TPM,Sex male">TPM Male Only</option>
-                                <option value="TPM,Age <50">TPM Age < 50</option>
-                                <option value="TPM,Age 50-59">TPM Age 50-59</option>
-                                <option value="TPM,Age >59">TPM Age > 59</option>
-                                <option value="TPM,Ischemia High">TPM Ischemia High</option>
-                                <option value="TPM,Ischemia Low">TPM Ischemia Low</option>
-                                <option value="Z-score,Sex female">Z-score Female Only</option>
-                                <option value="Z-score,Sex male">Z-score Male Only</option>
-                                <option value="Z-score,Age <50">Z-score Age < 50</option>
-                                <option value="Z-score,Age 50-59">Z-score Age 50-59</option>
-                                <option value="Z-score,Age >59">Z-score Age > 59</option>
-                                <option value="Z-score,Ischemia High">Z-score Ischemia High</option>
-                                <option value="Z-score,Ischemia Low">Z-score Ischemia Low</option>  
+                                <option value="TPM,Pearson Sex female">TPM Female Only</option>
+                                <option value="TPM,Pearson Sex male">TPM Male Only</option>
+                                <option value="TPM,Pearson Age <50">TPM Age < 50</option>
+                                <option value="TPM,Pearson Age 50-59">TPM Age 50-59</option>
+                                <option value="TPM,Pearson Age >59">TPM Age > 59</option>
+                                <option value="TPM,Pearson Ischemia high">TPM Ischemia High</option>
+                                <option value="TPM,Pearson Ischemia low">TPM Ischemia Low</option>
+                                <option value="Z-score,Pearson Sex female">Z-score Female Only</option>
+                                <option value="Z-score,Pearson Sex male">Z-score Male Only</option>
+                                <option value="Z-score,Pearson Age <50">Z-score Age < 50</option>
+                                <option value="Z-score,Pearson Age 50-59">Z-score Age 50-59</option>
+                                <option value="Z-score,Pearson Age >59">Z-score Age > 59</option>
+                                <option value="Z-score,Pearson Ischemia high">Z-score Ischemia High</option>
+                                <option value="Z-score,Pearson Ischemia low">Z-score Ischemia Low</option>  
                               </optgroup>
                             </select>
                             <fieldset>
@@ -310,20 +310,20 @@
                                 <option value="Z-score,Min G">Z-score Robust Minimum G Realization</option>
                               </optgroup>
                               <optgroup label="Covariates">
-                                <option value="TPM,Sex female">TPM Female Only</option>
-                                <option value="TPM,Sex male">TPM Male Only</option>
-                                <option value="TPM,Age <50">TPM Age < 50</option>
-                                <option value="TPM,Age 50-59">TPM Age 50-59</option>
-                                <option value="TPM,Age >59">TPM Age > 59</option>
-                                <option value="TPM,Ischemia High">TPM Ischemia High</option>
-                                <option value="TPM,Ischemia Low">TPM Ischemia Low</option>
-                                <option value="Z-score,Sex female">Z-score Female Only</option>
-                                <option value="Z-score,Sex male">Z-score Male Only</option>
-                                <option value="Z-score,Age <50">Z-score Age < 50</option>
-                                <option value="Z-score,Age 50-59">Z-score Age 50-59</option>
-                                <option value="Z-score,Age >59">Z-score Age > 59</option>
-                                <option value="Z-score,Ischemia High">Z-score Ischemia High</option>
-                                <option value="Z-score,Ischemia Low">Z-score Ischemia Low</option>  
+                                <option value="TPM,Pearson Sex female">TPM Female Only</option>
+                                <option value="TPM,Pearson Sex male">TPM Male Only</option>
+                                <option value="TPM,Pearson Age <50">TPM Age < 50</option>
+                                <option value="TPM,Pearson Age 50-59">TPM Age 50-59</option>
+                                <option value="TPM,Pearson Age >59">TPM Age > 59</option>
+                                <option value="TPM,Pearson Ischemia high">TPM Ischemia High</option>
+                                <option value="TPM,Pearson Ischemia low">TPM Ischemia Low</option>
+                                <option value="Z-score,Pearson Sex female">Z-score Female Only</option>
+                                <option value="Z-score,Pearson Sex male">Z-score Male Only</option>
+                                <option value="Z-score,Pearson Age <50">Z-score Age < 50</option>
+                                <option value="Z-score,Pearson Age 50-59">Z-score Age 50-59</option>
+                                <option value="Z-score,Pearson Age >59">Z-score Age > 59</option>
+                                <option value="Z-score,Pearson Ischemia high">Z-score Ischemia High</option>
+                                <option value="Z-score,Pearson Ischemia low">Z-score Ischemia Low</option>  
                               </optgroup>
                             </select>
                             <fieldset>

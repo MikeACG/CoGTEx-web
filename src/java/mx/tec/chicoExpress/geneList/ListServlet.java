@@ -112,7 +112,7 @@ public class ListServlet extends HttpServlet {
         List<List<String>> geneList = Gz2NestedList.multipleReader(listsPaths, perGeneSep, 
                 geneListNrows, filterFile, filterColumn, precols);
         
-        // concatenate all headers and convert to data table headers, set database used to order the list as shown by default
+        // concatenate all headers and convert to data table headers
         List<String> allHeaders = new ArrayList<>(Arrays.asList(precolsHeaders));
         for (int i = 0; i < nVersions; i++) {
             List<String> hs = new ArrayList<>();
@@ -125,9 +125,13 @@ public class ListServlet extends HttpServlet {
         shownHeadersList.add(versionNames[filterFile] + " " + perVersionGeneHeaders.get(filterFile).get(filterColumn));
         List<DTCol> dtCols = Headers2DTCols.convert(allHeaders, formatAfter, shownHeadersList);
         
-        // make data table object from gene list and format it in the desired form
+        // make data table object from gene list and format it in the desired form, set database used to order the list as shown by default
+        int colsPassed = 0;
+        for (int i = 0; i < filterFile; i++) {
+            colsPassed += perVersionGeneHeaders.get(i).size();
+        }
         DataTable dataTable = new DataTable(geneList, dtCols, 
-                filterColumn + precolsHeaders.length);
+                filterColumn + precolsHeaders.length + colsPassed);
         dataTable.intStrDivide2doubleStr(formatAfter, formatFactor);
         //dataTable.addMaxDeltas(deltasFor, formatFactor);
         

@@ -17,6 +17,7 @@ public class GCoptions {
     private String legend = "none";
     private String seriesType = "scatter";
     private String title = "";
+    //private Explorer explorer = new Explorer();
     
     public GCoptions(Axis hAxis, Axis vAxis, int pointSize, ChartArea chartArea) {
         this.hAxis = hAxis;
@@ -50,4 +51,15 @@ public class GCoptions {
         
         return vRounded;
     }
+    
+    public class Explorer {
+        
+        private String[] actions = new String[] {"dragToZoom", "rightClickToReset"};
+        
+        public Explorer() {
+            
+        }
+        
+    }
+    
 }
